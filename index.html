@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3D Model AR Viewer</title>
+  <title>3D Model from Google Drive</title>
 
   <!-- โหลด model-viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
@@ -11,10 +11,8 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       background-color: #f0f0f0;
+      text-align: center;
     }
 
     h1 {
@@ -39,6 +37,7 @@
       font-size: 16px;
       border-radius: 5px;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     .ar-button:hover {
@@ -53,11 +52,11 @@
 </head>
 <body>
 
-  <h1>3D Model AR Viewer (From Google Drive)</h1>
+  <h1>3D Model from Google Drive</h1>
 
-  <model-viewer 
-    src="https://https://drive.google.com/file/d/1hCFaIfPuKuVlcuBBvqw4qSrIhK4fcYJ2/view?usp=sharing
-    alt="3D Model from Google Drive"
+  <model-viewer
+    src="https://drive.google.com/uc?export=download&id=1hCFaIfPuKuVlcuBBvqw4qSrIhK4fcYJ2"
+    alt="3D Model from Drive"
     ar
     ar-modes="webxr scene-viewer quick-look"
     camera-controls
