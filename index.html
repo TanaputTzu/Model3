@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer (GLB + USDZ)</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    model-viewer {
+      width: 100%;
+      max-width: 400px;
+      height: 400px;
+    }
+
+    a.ar-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: black;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>3D Model Viewer</h1>
+    <div id="viewer"></div>
+  </div>
+
+  <script>
+    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    const r2BaseUrl = "https://fd98b2f92df2465a2ebc8ad92854751f.r2.cloudflarestorage.com/models"; // แก้ไข URL เป็นของคุณ
+    const modelGLB = `${r2BaseUrl}/test011.glb`;
+    const modelUSDZ = `${r2BaseUrl}/test011.usdz`;
+
+    const viewerContainer = document.getElementById('viewer');
+
+    if (isiOS) {
+      viewerContainer.innerHTML = `
+        <a rel="ar" class="ar-button" href="${modelUSDZ}">
+          View in AR (iPhone/iPad)
+        </a>
+      `;
+    } else {
+      viewerContainer.innerHTML = `
+        <model-viewer src="${modelGLB}" alt="3D Model" auto-rotate camera-controls background-color="#ffffff" ar ar-modes="webxr scene-viewer quick-look"></model-viewer>
+      `;
+    }
+  </script>
+</body>
+</html>
