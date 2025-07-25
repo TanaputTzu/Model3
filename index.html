@@ -2,36 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Model Viewer (GLB + USDZ)</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <title>3D Model Viewer from R2</title>
+  <script type="module"
+    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  </script>
   <style>
     body {
       font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
-      background: #f0f0f0;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      text-align: center;
     }
 
     .container {
       position: relative;
-      text-align: center;
-      width: 100%;
       max-width: 800px;
+      margin: auto;
     }
 
-    /* เอฟเฟกต์ hover ที่ model-viewer */
     model-viewer {
       width: 100%;
-      max-width: 800px;
+      height: 500px;
       background: #fff;
       border: 1px solid #ddd;
       border-radius: 10px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.1);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      height: 500px;
     }
 
     model-viewer:hover {
@@ -39,7 +36,6 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    /* ปุ่ม AR button พร้อม hover effect */
     .ar-button {
       position: absolute;
       bottom: 20px;
@@ -65,37 +61,35 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>3D Model Viewer</h1>
-    <div id="viewer"></div>
-  </div>
+  <h1>🚀 ดูโมเดล 3D จาก Cloudflare R2</h1>
+
+  <div class="container" id="viewer"></div>
 
   <script>
-    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    const r2BaseUrl = "https://fd98b2f92df2465a2ebc8ad92854751f.r2.cloudflarestorage.com/models"; // <--- แก้ไขให้เป็น R2 URL ของคุณ
-    const modelGLB = `${r2BaseUrl}/testad.glb`;
-    const modelUSDZ = `${r2BaseUrl}/test011.usdz`;
+    const baseUrl = "https://fd98b2f92df2465a2ebc8ad92854751f.r2.cloudflarestorage.com/models";  // 🔁 เปลี่ยนให้ตรงของคุณ
+    const glbFile = "testad.glb";   // 🔁 เปลี่ยนชื่อไฟล์ให้ตรง
+    const usdzFile = "test011.usdz"; // 🔁 รองรับ AR บน iOS
 
-    const viewerContainer = document.getElementById('viewer');
+    const glbUrl = `${baseUrl}/${glbFile}`;
+    const usdzUrl = `${baseUrl}/${usdzFile}`;
+
+    const container = document.getElementById("viewer");
 
     if (isiOS) {
-      viewerContainer.innerHTML = `
-        <a rel="ar" class="ar-button" href="${modelUSDZ}">
-          View in AR (iPhone/iPad)
-        </a>
-      `;
+      container.innerHTML = `<a class="ar-button" rel="ar" href="${usdzUrl}">View in AR (iOS)</a>`;
     } else {
-      viewerContainer.innerHTML = `
-        <model-viewer src="${modelGLB}"
-                      alt="3D Model"
-                      auto-rotate
-                      camera-controls
-                      ar
-                      ar-modes="webxr scene-viewer quick-look"
-                      ios-src="${modelUSDZ}">
-        </model-viewer>
-      `;
+      container.innerHTML = `
+        <model-viewer
+          src="${glbUrl}"
+          ios-src="${usdzUrl}"
+          alt="3D Model"
+          auto-rotate
+          camera-controls
+          ar
+          ar-modes="webxr scene-viewer quick-look"
+        ></model-viewer>`;
     }
   </script>
 </body>
