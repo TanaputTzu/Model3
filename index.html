@@ -16,23 +16,51 @@
     }
 
     .container {
+      position: relative;
       text-align: center;
+      width: 100%;
+      max-width: 800px;
     }
 
+    /* เอฟเฟกต์ hover ที่ model-viewer */
     model-viewer {
       width: 100%;
-      max-width: 400px;
-      height: 400px;
+      max-width: 800px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 500px;
     }
 
-    a.ar-button {
-      display: inline-block;
-      padding: 12px 24px;
-      background: black;
+    model-viewer:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ปุ่ม AR button พร้อม hover effect */
+    .ar-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #00c3ff, #0070ff);
       color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
       text-decoration: none;
-      border-radius: 8px;
-      margin-top: 16px;
+    }
+
+    .ar-button:hover {
+      background: linear-gradient(45deg, #0070ff, #00c3ff);
+      transform: scale(1.1) rotate(-1deg);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -45,7 +73,7 @@
   <script>
     const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    const r2BaseUrl = "https://fd98b2f92df2465a2ebc8ad92854751f.r2.cloudflarestorage.com/models"; // แก้ไข URL เป็นของคุณ
+    const r2BaseUrl = "https://fd98b2f92df2465a2ebc8ad92854751f.r2.cloudflarestorage.com/models"; // <--- แก้ไขให้เป็น R2 URL ของคุณ
     const modelGLB = `${r2BaseUrl}/test011.glb`;
     const modelUSDZ = `${r2BaseUrl}/test011.usdz`;
 
@@ -59,7 +87,14 @@
       `;
     } else {
       viewerContainer.innerHTML = `
-        <model-viewer src="${modelGLB}" alt="3D Model" auto-rotate camera-controls background-color="#ffffff" ar ar-modes="webxr scene-viewer quick-look"></model-viewer>
+        <model-viewer src="${modelGLB}"
+                      alt="3D Model"
+                      auto-rotate
+                      camera-controls
+                      ar
+                      ar-modes="webxr scene-viewer quick-look"
+                      ios-src="${modelUSDZ}">
+        </model-viewer>
       `;
     }
   </script>
