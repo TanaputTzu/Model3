@@ -4,29 +4,14 @@
   <meta charset="UTF-8">
   <title>3D Model AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      text-align: center;
-      background-color: #f9f9f9;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    model-viewer {
-      width: 100%;
-      max-width: 600px;
-      height: 500px;
-      margin: 20px auto;
-    }
-  </style>
 </head>
 <body>
+
   <h1>3D Model AR Viewer</h1>
 
   <model-viewer
-    src="model/test01.glb"
-    ios-src="model/tested.usdz" <!-- ✅ เพิ่มตรงนี้สำหรับ iPhone -->
+    src="https://tanaputtzu.github.io/Model3/model/tes01.glb"
+    ios-src="https://tanaputtzu.github.io/Model3/model/test01.usdz"
     alt="3D Model"
     ar
     ar-modes="scene-viewer quick-look webxr"
@@ -39,5 +24,6 @@
   <footer>
     © 2025 My AR Model
   </footer>
+
 </body>
 </html>
