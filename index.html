@@ -1,38 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>3D AR Viewer</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <style>
-      body {
-        margin: 0;
-        background: #f0f0f0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-      model-viewer {
-        width: 100%;
-        height: 100vh;
-        max-height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-   <model-viewer
+<head>
+  <meta charset="UTF-8">
+  <title>3D Model AR Viewer</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>3D Model AR Viewer</h1>
+
+  <model-viewer
   src="https://pub-d16f18b6edf64ed49160ae890ddd59b6.r2.dev/test01.glb"
-  ios-src="https://pub-d16f18b6edf64ed49160ae890ddd59b6.r2.dev/test01.usdz"
-  alt="3D Model"
+  ios-src="https://pub-d16f18b6edf64ed49160ae890ddd59b6.r2.dev/test011.usdz"
+  alt="3D model"
   ar
-  ar-modes="scene-viewer webxr quick-look"
-  auto-rotate
+  ar-modes="webxr scene-viewer quick-look"
   camera-controls
-  shadow-intensity="1"
-  environment-image="neutral"
+  auto-rotate
+  style="width: 100%; height: 500px;"
 >
+  <button slot="ar-button" class="ar-button">
+    👓 View in AR
+  </button>
 </model-viewer>
 
-  </body>
-</html>
+
+  <footer>
+    © 2025 My AR Model
+  </footer>
+</body>
+</html> 
