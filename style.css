@@ -1,0 +1,37 @@
+/* เอฟเฟกต์ hover ที่ model-viewer */
+model-viewer {
+  max-width: 800px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+model-viewer:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* ปุ่ม AR button พร้อม hover effect */
+.ar-button {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #00c3ff, #0070ff);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.ar-button:hover {
+  background: linear-gradient(45deg, #0070ff, #00c3ff);
+  transform: scale(1.1) rotate(-1deg);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
