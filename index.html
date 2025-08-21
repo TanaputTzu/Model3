@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3D Model AR Viewer with Multiple Animations</title>
+  <title>3D Model AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     body {
@@ -30,48 +30,24 @@
       left: 50%;
       transform: translateX(-50%);
     }
-    .animation-controls {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
   </style>
 </head>
 <body>
   <h1>3D Model AR Viewer</h1>
 
   <model-viewer
-    id="myModel"
     src="https://modelagency.pw/room50N.glb"  
     ios-src="https://modelagency.pw/test01.usdz" 
     alt="3D model"
     ar
     ar-modes="webxr scene-viewer quick-look"
     camera-controls
-    auto-rotate>
-    <button slot="ar-button" class="ar-button">
-      👓 View in AR
-    </button>
+    auto-rotate
+    **autoplay**>
+      <button slot="ar-button" class="ar-button">
+        👓 View in AR
+      </button>
   </model-viewer>
-
-  <div class="animation-controls">
-    <button onclick="changeAnimation('Armature.002')">เล่นอนิเมชัน "Idle"</button>
-    <button onclick="changeAnimation('Armature')">เล่นอนิเมชัน "Run"</button>
-    <button onclick="stopAnimation()">หยุดอนิเมชัน</button>
-  </div>
-
-  <script>
-    const modelViewer = document.getElementById('myModel');
-
-    function changeAnimation(animationName) {
-      modelViewer.animationName = animationName;
-    }
-
-    function stopAnimation() {
-      modelViewer.animationName = null;
-    }
-  </script>
 
   <footer>© 2025 My AR Model</footer>
 </body>
