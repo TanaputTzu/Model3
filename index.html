@@ -35,19 +35,22 @@
 <body>
   <h1>3D Model AR Viewer</h1>
 
-  <model-viewer
-    src="https://modelagency.pw/room50N.glb"  
-    ios-src="https://modelagency.pw/test01.usdz" 
-    alt="3D model"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    auto-rotate
-    **autoplay**>
-      <button slot="ar-button" class="ar-button">
-        👓 View in AR
-      </button>
-  </model-viewer>
+ <model-viewer
+  src="https://modelagency.pw/room50N.glb"  
+  ios-src="https://modelagency.pw/test01.usdz" 
+  alt="3D model"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  autoplay
+  animation-name="Animation"
+>
+  <button slot="ar-button" class="ar-button">
+    👓 View in AR
+  </button>
+</model-viewer>
+
 
   <footer>© 2025 My AR Model</footer>
 </body>
