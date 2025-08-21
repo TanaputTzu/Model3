@@ -35,28 +35,45 @@
 <body>
   <h1>3D Model AR Viewer</h1>
 
- <model-viewer
-  src="https://modelagency.pw/room51N.glb"  
-  ios-src="https://modelagency.pw/test01.usdz" 
+<model-viewer
+  id="viewer"
+  src="https://modelagency.pw/room53N.glb"
+  ios-src="https://modelagency.pw/test01.usdz"
   alt="3D model"
   ar
   ar-modes="webxr scene-viewer quick-look"
   camera-controls
   auto-rotate
   autoplay
-  animation-name="Armature|mixamo.com|Layer0.002"
->
+  animation-name="Armature|mixamo.com|Layer0.002">
+  
   <button slot="ar-button" class="ar-button">
     👓 View in AR
   </button>
 </model-viewer>
-  
+
 <script>
-  const viewer = document.querySelector("model-viewer");
+  const viewer = document.querySelector("#viewer");
+
   viewer.addEventListener("load", () => {
     console.log("Animations:", viewer.availableAnimations);
+
+    // เริ่มวนลูป: เล่น 6 วิ → หยุด 6 วิ → เล่นใหม่
+    function loopAnimation() {
+      viewer.play(); // เริ่มเล่นใหม่
+      setTimeout(() => {
+        viewer.pause(); // หยุดหลัง 6 วิ
+      }, 6000);
+    }
+
+    // เล่นครั้งแรก
+    loopAnimation();
+
+    // ทำวนไปทุก 12 วิ (6 เล่น + 6 หยุด)
+    setInterval(loopAnimation, 12000);
   });
 </script>
+
 
 
 
