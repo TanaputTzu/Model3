@@ -50,10 +50,14 @@
     👓 View in AR
   </button>
 </model-viewer>
+  
 <script>
   const viewer = document.querySelector("model-viewer");
-  viewer.animationName = "Armature.002"; // เปลี่ยนเป็นชื่อ animation ที่ต้องการ
+  viewer.addEventListener("load", () => {
+    console.log("Animations:", viewer.availableAnimations);
+  });
 </script>
+
 
 
   <footer>© 2025 My AR Model</footer>
