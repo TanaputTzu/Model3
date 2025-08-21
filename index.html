@@ -63,14 +63,14 @@
       viewer.play(); // เริ่มเล่นใหม่
       setTimeout(() => {
         viewer.pause(); // หยุดหลัง 6 วิ
-      }, 6000);
+      }, 3000);
     }
 
     // เล่นครั้งแรก
     loopAnimation();
 
     // ทำวนไปทุก 12 วิ (6 เล่น + 6 หยุด)
-    setInterval(loopAnimation, 12000);
+    setInterval(loopAnimation, 6000);
   });
 </script>
 
