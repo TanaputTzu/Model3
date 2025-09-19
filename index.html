@@ -30,6 +30,24 @@
       left: 50%;
       transform: translateX(-50%);
     }
+    .controls {
+      margin: 15px 0;
+    }
+    select {
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 6px;
+    }
+    button.play-btn {
+      margin-left: 10px;
+      padding: 8px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -52,23 +70,36 @@
     </button>
   </model-viewer>
 
+  <!-- ตัวเลือกอนิเมชัน -->
+  <div class="controls">
+    <select id="animationSelect"></select>
+    <button class="play-btn" onclick="playSelected()">▶ เล่น</button>
+  </div>
+
   <script>
     const viewer = document.querySelector("#viewer");
+    const select = document.querySelector("#animationSelect");
 
     viewer.addEventListener("load", () => {
-      // รายชื่ออนิเมชันทั้งหมด
-      const animations = [
-        "ใบพัดAction.001",
-        "Circle|CameraAction",
-        "GltfAnimation 0.002",
-        "Armature|mixamo.com|Layer0"
-      ];
+      // ดึงรายชื่ออนิเมชันจากโมเดลโดยตรง
+      const animations = viewer.availableAnimations;
+      console.log("พบอนิเมชัน:", animations);
 
-      // เล่นทุกอันพร้อมกัน
+      // เติมลงใน dropdown
       animations.forEach(name => {
-        viewer.play({ animationName: name, repetitions: Infinity });
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
       });
     });
+
+    function playSelected() {
+      const chosen = select.value;
+      if (chosen) {
+        viewer.play({ animationName: chosen, repetitions: Infinity });
+      }
+    }
   </script>
 
   <footer>© 2025 My AR Model</footer>
