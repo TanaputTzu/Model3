@@ -4,10 +4,7 @@
   <meta charset="UTF-8">
   <title>3D Model AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-</head>
-<body>
-  <h1>3D Model AR Viewer</h1>
-<style>
+  <style>
     body {
       font-family: sans-serif;
       text-align: center;
@@ -36,6 +33,8 @@
   </style>
 </head>
 <body>
+  <h1>3D Model AR Viewer</h1>
+
   <model-viewer
     id="viewer"
     src="https://modelagency.pw/Untitled23.glb"
@@ -57,8 +56,18 @@
     const viewer = document.querySelector("#viewer");
 
     viewer.addEventListener("load", () => {
-      // เล่นแค่อนิเมชันใบพัด
-      viewer.play({ animationName: "Armature|mixamo.com|Layer0", repetitions: Infinity });
+      // รายชื่ออนิเมชันทั้งหมด
+      const animations = [
+        "ใบพัดAction.001",
+        "Circle|CameraAction",
+        "GltfAnimation 0.002",
+        "Armature|mixamo.com|Layer0"
+      ];
+
+      // เล่นทุกอันพร้อมกัน
+      animations.forEach(name => {
+        viewer.play({ animationName: name, repetitions: Infinity });
+      });
     });
   </script>
 
