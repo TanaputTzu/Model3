@@ -35,26 +35,37 @@
 <body>
   <h1>3D Model AR Viewer</h1>
 
-  <model-viewer
-    id="viewer"
-    src="https://modelagency.pw/Untitled23.glb"
-    ios-src="https://modelagency.pw/test01.usdz"
-    alt="3D model"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    auto-rotate
-    autoplay
-    animation-name="Armature|mixamo.com|Layer0"
-    animation-name="GltfAnimation 0.002"
-    animation-name="Circle|CameraAction"
-    animation-name="ใบพัดAction.001"
-    animation-loop>   <!-- เพิ่มตรงนี้ -->
-    
-    <button slot="ar-button" class="ar-button">
-      👓 View in AR
-    </button>
-  </model-viewer>
+ <model-viewer
+  id="viewer"
+  src="https://modelagency.pw/Untitled23.glb"
+  ios-src="https://modelagency.pw/test01.usdz"
+  alt="3D model"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  autoplay
+  animation-loop>
+  
+  <button slot="ar-button" class="ar-button">
+    👓 View in AR
+  </button>
+</model-viewer>
+
+<script>
+  const viewer = document.querySelector("#viewer");
+
+  viewer.addEventListener("load", () => {
+    const animations = viewer.availableAnimations;
+    console.log("Animations:", animations);
+
+    // เล่นทุก animation พร้อมกัน
+    animations.forEach(name => {
+      viewer.play({ animationName: name, repetitions: Infinity });
+    });
+  });
+</script>
+
 
   <footer>© 2025 My AR Model</footer>
 </body>
