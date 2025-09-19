@@ -55,28 +55,17 @@
 <script>
 const viewer = document.querySelector('#viewer');
 
-viewer.addEventListener('load', async () => {
+viewer.addEventListener("load", () => {
   const animations = viewer.availableAnimations || [];
-  console.log('Animations:', animations);
+  console.log("Animations:", animations);
 
-  if (!animations.length) {
-    console.warn('ไม่พบอนิเมชัน — ตรวจสอบไฟล์ .glb ใน glTF viewer/validator');
-    return;
+  if (animations.length > 0) {
+    // เลือกอนิเมชันตัวแรก
+    viewer.animationName = animations[0];
+    viewer.play({ repetitions: Infinity });
   }
-
-  // เลือกอนิเมชันตัวแรก แล้วสั่งเล่น
-  const first = animations[0];
-
-  // 1) ตั้ง attribute (ชื่ออนิเมชันต้องตรงเป๊ะ)
-  viewer.setAttribute('Armature|mixamo.com|Layer0', first);
-
-  // 2) รอให้ element อัปเดต (model-viewer สืบทอดจาก Lit; คำสั่งนี้ช่วยให้การตั้ง attribute "จับ" ก่อน play)
-  if (viewer.updateComplete) await viewer.updateComplete;
-
-  // 3) เล่น (play รับ options เช่น repetitions / pingpong)
-  // อย่าใส่ชื่ออนิเมชันเป็นพารามิเตอร์ของ play() — ให้ตั้ง attribute ก่อนแล้วเรียก play()
-  viewer.play({ repetitions: Infinity });
 });
+
 </script>
 
 
