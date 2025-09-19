@@ -30,91 +30,40 @@
       left: 50%;
       transform: translateX(-50%);
     }
-    .controls {
-      margin: 15px 0;
-    }
-    select {
-      padding: 8px;
-      font-size: 1rem;
-      border-radius: 6px;
-    }
-    button.play-btn {
-      margin-left: 10px;
-      padding: 8px 15px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <h1>3D Model AR Viewer</h1>
 
-  <model-viewer
-    id="viewer"
-    src="https://modelagency.pw/Untitled41.glb"
-    ios-src="https://modelagency.pw/test01.usdz"
-    alt="3D model"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    auto-rotate
-    autoplay
-    animation-loop>
-    
-    <button slot="ar-button" class="ar-button">
-      👓 View in AR
-    </button>
-  </model-viewer>
+ <model-viewer
+  id="viewer"
+  src="https://modelagency.pw/Untitled23.glb"
+  ios-src="https://modelagency.pw/test01.usdz"
+  alt="3D model"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  autoplay
+  animation-loop>
+  
+  <button slot="ar-button" class="ar-button">
+    👓 View in AR
+  </button>
+</model-viewer>
 
-  <!-- ตัวเลือกอนิเมชัน -->
-  <div class="controls">
-    <select id="animationSelect"></select>
-    <button class="play-btn" onclick="playSelected()">▶ เล่น</button>
-  </div>
-
- <script>
+<script>
   const viewer = document.querySelector("#viewer");
-  const select = document.querySelector("#animationSelect");
 
   viewer.addEventListener("load", () => {
-    const animations = viewer.availableAnimations;
-    console.log("พบอนิเมชัน:", animations);
+  const animations = viewer.availableAnimations;
+  console.log("Animations:", animations);
 
-    animations.forEach(name => {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
-    });
-
-    let index = 0;
-
-    function playNext() {
-      const name = animations[index];
-      select.value = name;
-      viewer.play({ animationName: name, repetitions: 1 });
-      console.log("กำลังเล่น:", name);
-
-      // เมื่อเล่นจบ ให้ไปอนิเมชันถัดไป
-      viewer.addEventListener("finished", () => {
-        index = (index + 1) % animations.length;
-        playNext();
-      }, { once: true });
-    }
-
-    if (animations.length > 0) playNext();
+  animations.forEach(name => {
+    viewer.play({ animationName: ใบพัดAction.001,GltfAnimation 0.002,Armature|mixamo.com|Layer0, repetitions: Infinity });
   });
+});
 
-  function playSelected() {
-    const chosen = select.value;
-    if (chosen) {
-      viewer.play({ animationName: chosen, repetitions: Infinity });
-    }
-  }
 </script>
 
 
