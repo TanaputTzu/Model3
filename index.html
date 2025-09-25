@@ -37,7 +37,7 @@
 
  <model-viewer
   id="viewer"
-  src="https://modelagency.pw/Untitled23.glb"
+  src="https://modelagency.pw/C1.glb"
   ios-src="https://modelagency.pw/test01.usdz"
   alt="3D model"
   ar
@@ -52,21 +52,7 @@
   </button>
 </model-viewer>
 
-<script>
-const viewer = document.querySelector('#viewer');
 
-viewer.addEventListener("load", () => {
-  const animations = viewer.availableAnimations || [];
-  console.log("Animations:", animations);
-
-  if (animations.length > 0) {
-    // เลือกอนิเมชันตัวแรก
-    viewer.animationName = animations[0];
-    viewer.play({ repetitions: Infinity });
-  }
-});
-
-</script>
 
 
   <footer>© 2025 My AR Model</footer>
