@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Model AR Viewer</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    model-viewer {
+      width: 100%;
+      height: 500px;
+      background: #ddd;
+    }
+    .ar-button {
+      background: #ff6600;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <h1>3D Model AR Viewer</h1>
+
+ <model-viewer
+  id="viewer"
+  src="https://modelagency.pw/C1.glb"
+  ios-src="https://modelagency.pw/test01.usdz"
+  alt="3D model"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  autoplay
+  animation-loop>
+  
+  <button slot="ar-button" class="ar-button">
+    👓 View in AR
+  </button>
+</model-viewer>
+
+
+
+
+  <footer>© 2025 My AR Model</footer>
+</body>
+</html>
