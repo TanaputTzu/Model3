@@ -37,8 +37,8 @@
 
  <model-viewer
   id="viewer"
-  src="https://modelagency.pw/C1.glb"
-  ios-src="https://modelagency.pw/test01.usdz"
+  src="https://modelagency.pw/Untitled502activeaction.glb"
+  ios-src="___"
   alt="3D model"
   ar
   ar-modes="webxr scene-viewer quick-look"
