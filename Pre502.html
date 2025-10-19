@@ -2,58 +2,107 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- สำคัญมาก -->
   <title>3D Model AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f9f9f9;
+    /* รีเซ็ตค่าพื้นฐานให้รองรับทุกอุปกรณ์ */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 15px 0;
+      text-align: center;
+    }
+
     model-viewer {
       width: 100%;
-      height: 500px;
+      max-width: 600px;         /* กำหนดขนาดสูงสุดสำหรับจอใหญ่ */
+      aspect-ratio: 1 / 1;      /* ทำให้โมเดลเป็นสี่เหลี่ยมจัตุรัสสมส่วน */
       background: #ddd;
+      border-radius: 12px;
+      overflow: hidden;
     }
+
+    /* ปุ่ม AR */
     .ar-button {
-      background: #ff6600;
+      background: linear-gradient(45deg, #ff6600, #ff9900);
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 1rem;
+      font-weight: bold;
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+
+    .ar-button:hover {
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    footer {
+      margin: 20px 0;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ปรับสำหรับจอเล็ก */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+
+      .ar-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+
+      model-viewer {
+        aspect-ratio: 4 / 5; /* บางจอมือถือแนวตั้งจะดูพอดีกว่า */
+      }
     }
   </style>
 </head>
 <body>
   <h1>3D Model AR Viewer</h1>
 
- <model-viewer
-  id="viewer"
-  src="https://modelagency.pw/test502.glb"
-  ios-src="___"
-  alt="3D model"
-  ar
-  ar-modes="webxr scene-viewer quick-look"
-  camera-controls
-  auto-rotate
-  autoplay
-  animation-loop>
-  
-  <button slot="ar-button" class="ar-button">
-    👓 View in AR
-  </button>
-</model-viewer>
-
-
-
+  <model-viewer
+    id="viewer"
+    src="https://modelagency.pw/test502.glb"
+    ios-src="___"
+    alt="3D model"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    auto-rotate
+    autoplay
+    animation-loop>
+    
+    <button slot="ar-button" class="ar-button">
+      👓 View in AR
+    </button>
+  </model-viewer>
 
   <footer>© 2025 My AR Model</footer>
 </body>
