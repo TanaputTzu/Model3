@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- สำคัญมาก -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>3D Model AR Viewer</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
-    /* รีเซ็ตค่าพื้นฐานให้รองรับทุกอุปกรณ์ */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -15,24 +14,28 @@
     }
 
     body {
-      font-family: sans-serif;
+      font-family: "Segoe UI", sans-serif;
       background: #f9f9f9;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow-x: hidden;
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin: 15px 0;
+      font-size: 1.6rem;
       text-align: center;
+      margin: 12px 0;
+      color: #333;
     }
 
     model-viewer {
       width: 100%;
-      max-width: 600px;         /* กำหนดขนาดสูงสุดสำหรับจอใหญ่ */
-      aspect-ratio: 1 / 1;      /* ทำให้โมเดลเป็นสี่เหลี่ยมจัตุรัสสมส่วน */
+      max-width: 900px;
+      height: auto;
+      aspect-ratio: 1 / 1; /* ปรับตามอุปกรณ์โดยอัตโนมัติ */
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
@@ -40,7 +43,7 @@
 
     /* ปุ่ม AR */
     .ar-button {
-      background: linear-gradient(45deg, #ff6600, #ff9900);
+      background: linear-gradient(135deg, #ff6600, #ff9900);
       color: white;
       padding: 12px 24px;
       border: none;
@@ -52,7 +55,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
       transition: 0.3s;
     }
 
@@ -61,25 +64,35 @@
     }
 
     footer {
-      margin: 20px 0;
+      margin: 15px 0;
       font-size: 0.9rem;
       color: #666;
       text-align: center;
     }
 
-    /* ปรับสำหรับจอเล็ก */
+    /* 📱 สำหรับมือถือแนวตั้ง */
     @media (max-width: 480px) {
       h1 {
         font-size: 1.2rem;
       }
-
-      .ar-button {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-      }
-
       model-viewer {
-        aspect-ratio: 4 / 5; /* บางจอมือถือแนวตั้งจะดูพอดีกว่า */
+        aspect-ratio: 4 / 5; /* ปรับสัดส่วนให้เต็มจอมือถือแนวตั้ง */
+      }
+    }
+
+    /* 📱 สำหรับ iPad หรือแท็บเล็ต */
+    @media (min-width: 481px) and (max-width: 1024px) {
+      model-viewer {
+        aspect-ratio: 3 / 2; /* ดูเต็มจอแนวนอนของ iPad */
+        max-width: 100%;
+      }
+    }
+
+    /* 💻 สำหรับ desktop จอใหญ่ */
+    @media (min-width: 1025px) {
+      model-viewer {
+        aspect-ratio: 16 / 9;
+        max-width: 900px;
       }
     }
   </style>
