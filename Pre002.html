@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Viewer</title>
+  <title>3D Viewer on GitHub Pages</title>
 
   <style>
     body { margin: 0; overflow: hidden; font-family: sans-serif; }
@@ -32,10 +32,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
-// ----- Scene Setup -----
+// Scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(2, 2, 4);
+camera.position.set(2,2,4);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -46,20 +46,19 @@ const controls = new OrbitControls(camera, renderer.domElement);
 // Lights
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(2, 2, 2);
+directionalLight.position.set(2,2,2);
 scene.add(directionalLight);
 
-// ----- Load GLB Model from External URL -----
+// Load GLB Model
 const loader = new GLTFLoader();
 let mixer = null;
 
-// ตัวอย่าง URL โมเดล (เปลี่ยนเป็นของคุณได้)
+// เปลี่ยน URL นี้เป็นโมเดลของคุณ
 const modelURL = "https://modelagency.pw/PCL.glb";
 
 loader.load(modelURL, (gltf) => {
   scene.add(gltf.scene);
 
-  // Play animations if exist
   if (gltf.animations && gltf.animations.length) {
     mixer = new THREE.AnimationMixer(gltf.scene);
     gltf.animations.forEach((clip) => {
@@ -67,11 +66,9 @@ loader.load(modelURL, (gltf) => {
       action.play();
     });
   }
-}, undefined, (error) => {
-  console.error('Error loading model:', error);
-});
+}, undefined, (err) => console.error(err));
 
-// ----- Raycaster for click detection -----
+// Raycaster for click detection
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let selected = null;
@@ -86,7 +83,6 @@ window.addEventListener("click", (event) => {
   if (hits.length > 0) {
     const obj = hits[0].object;
 
-    // Highlight selected
     if (selected && selected.material && selected.material.emissive) {
       selected.material.emissive.setHex(0x000000);
     }
@@ -95,7 +91,6 @@ window.addEventListener("click", (event) => {
       obj.material.emissive.setHex(0xffff00);
     }
 
-    // Show custom properties
     const data = Object.keys(obj.userData).length
       ? JSON.stringify(obj.userData, null, 2)
       : "No custom properties";
@@ -105,23 +100,19 @@ window.addEventListener("click", (event) => {
   }
 });
 
-// ----- Animation Loop -----
+// Animation loop
 const clock = new THREE.Clock();
-
 function animate() {
   requestAnimationFrame(animate);
-
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
-
   renderer.render(scene, camera);
 }
-
 animate();
 
-// ----- Handle Window Resize -----
+// Window resize
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
