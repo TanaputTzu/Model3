@@ -7,7 +7,6 @@
 
   <style>
     body { margin: 0; overflow: hidden; font-family: sans-serif; }
-
     #info-box {
       position: absolute;
       top: 20px;
@@ -33,7 +32,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
-// Scene, Camera, Renderer
+// ----- Scene Setup -----
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
 camera.position.set(2, 2, 4);
@@ -42,7 +41,6 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 
 // Lights
@@ -51,11 +49,14 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(2, 2, 2);
 scene.add(directionalLight);
 
-// GLTF Loader & Animation Mixer
+// ----- Load GLB Model from External URL -----
 const loader = new GLTFLoader();
 let mixer = null;
 
-loader.load('https://modelagency.pw/PCL.glb', (gltf) => {
+// ตัวอย่าง URL โมเดล (เปลี่ยนเป็นของคุณได้)
+const modelURL = "https://modelagency.pw/PCL.glb";
+
+loader.load(modelURL, (gltf) => {
   scene.add(gltf.scene);
 
   // Play animations if exist
@@ -70,7 +71,7 @@ loader.load('https://modelagency.pw/PCL.glb', (gltf) => {
   console.error('Error loading model:', error);
 });
 
-// Raycaster for click detection
+// ----- Raycaster for click detection -----
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let selected = null;
@@ -104,8 +105,9 @@ window.addEventListener("click", (event) => {
   }
 });
 
-// Animation loop
+// ----- Animation Loop -----
 const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -114,9 +116,10 @@ function animate() {
 
   renderer.render(scene, camera);
 }
+
 animate();
 
-// Handle window resize
+// ----- Handle Window Resize -----
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
