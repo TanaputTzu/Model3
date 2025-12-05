@@ -3,26 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Viewer + Custom Properties</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <title>3D Viewer</title>
+
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+
+    #info-box {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 260px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- UI Panel -->
-<div id="info-panel">
+<div id="info-box">
   <h2>Object Info</h2>
   <div id="info-content">Click a part to inspect</div>
 </div>
 
-<!-- Three.js + Loaders -->
 <script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
+// Create scene
 let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(2, 2, 4);
+let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(2,2,4);
 
 let renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -32,70 +46,53 @@ document.body.appendChild(renderer.domElement);
 let controls = new OrbitControls(camera, renderer.domElement);
 
 // Lights
-let light1 = new THREE.DirectionalLight(0xffffff, 1);
-light1.position.set(2, 2, 2);
-scene.add(light1);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+let dlight = new THREE.DirectionalLight(0xffffff, 1);
+dlight.position.set(2,2,2);
+scene.add(dlight);
 
-let ambient = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambient);
-
-// Raycaster for click detection
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let selectedObject = null;
-
+// Load model
 const loader = new GLTFLoader();
 loader.load("https://modelagency.pw/PCL.glb", (gltf) => {
+
   scene.add(gltf.scene);
+
 });
 
-// Click interaction to show properties
-function onMouseClick(event) {
+// Raycaster
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let selected = null;
+
+window.addEventListener("click", (event) => {
+
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  
-  const intersects = raycaster.intersectObjects(scene.children, true);
-  if (intersects.length > 0) {
 
-    let object = intersects[0].object;
+  const hits = raycaster.intersectObjects(scene.children, true);
+  if (hits.length > 0) {
+    const obj = hits[0].object;
 
-    // Remove highlight
-    if (selectedObject) {
-      selectedObject.material.emissive?.setHex(0x000000);
-    }
-
-    selectedObject = object;
-
-    // Highlight selection (if material supports it)
-    if (object.material && object.material.emissive) {
-      object.material.emissive.setHex(0xffff00);
-    }
-
-    // Show custom properties
-    let infoDiv = document.getElementById("info-content");
-    let name = object.name || "Unnamed";
-
-    let properties = Object.keys(object.userData).length
-      ? JSON.stringify(object.userData, null, 2)
+    const data = Object.keys(obj.userData).length
+      ? JSON.stringify(obj.userData, null, 2)
       : "No custom properties";
 
-    infoDiv.innerHTML =
-      `<strong>Object:</strong> ${name}<br><br>` +
-      `<strong>Properties:</strong><pre>${properties}</pre>`;
+    document.getElementById("info-content").innerHTML =
+      `<strong>${obj.name}</strong><br><pre>${data}</pre>`;
   }
-}
 
-window.addEventListener("click", onMouseClick);
+});
 
+// Render loop
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 animate();
 
-// Resize support
+// Resize fix
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
