@@ -154,10 +154,8 @@
   viewer.addEventListener("load", () => {
     console.log("MODEL LOADED");
 
-    const threeScene = viewer.model.scene;       // THREE.Scene จาก model-viewer
-    const camera = viewer.getCameraOrbit
-      ? viewer.getCameraOrbit()
-      : null;
+    const sceneGraph = viewer.getScene();  // <-- scene graph object
+    const threeScene = sceneGraph.children; // <-- รายการ object ในฉาก
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -169,11 +167,12 @@
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       // ใช้กล้องของ model-viewer
-      const cam = viewer.getCamera();  // <-- API ที่ถูกต้อง
+      const cam = viewer.getCamera();  // <-- API ที่ถูกต้องของ scene-graph API
 
       raycaster.setFromCamera(mouse, cam);
 
-      const intersects = raycaster.intersectObjects(threeScene.children, true);
+      // ทำ Raycast
+      const intersects = raycaster.intersectObjects(threeScene, true);
 
       if (intersects.length > 0) {
         const obj = intersects[0].object;
