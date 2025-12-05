@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer with Numbered Hotspots</title>
+  <title>3D Model AR Viewer with Numbered Hotspots (Fixed)</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
@@ -36,8 +36,7 @@
     model-viewer {
       width: 95%; 
       max-width: 900px;
-      height: 75vh; /* 🟢 กำหนดความสูงให้มองเห็นได้ชัดเจน */
-      
+      height: 75vh; 
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
@@ -70,7 +69,7 @@
     .Hotspot {
       background: #007bff;
       border-radius: 50%;
-      width: 22px; /* ขนาดใหญ่ขึ้นเล็กน้อยเพื่อให้เห็นตัวเลขชัดเจน */
+      width: 22px; 
       height: 22px;
       border: 3px solid white;
       cursor: pointer;
@@ -96,13 +95,17 @@
       pointer-events: none;
       position: absolute;
       min-width: 200px;
+      
+      /* 💥 FIX: ปรับค่าเริ่มต้นของ Pop-up ให้ซ่อนและอยู่เหนือ Hotspot */
       transform: translate(-50%, -100%);
-      opacity: 0; /* ซ่อนข้อความเริ่มต้น */
+      opacity: 0; 
+      visibility: hidden; /* 🟢 FIX: เพิ่ม visibility: hidden เพื่อซ่อนชัวร์ๆ */
       transition: opacity 0.3s, transform 0.3s;
       z-index: 5;
     }
     .HotspotAnnotation.visible {
-      opacity: 1; /* แสดง Pop-up เมื่อกด */
+      opacity: 1; 
+      visibility: visible; /* 🟢 FIX: แสดงเมื่อมีการคลิก */
       transform: translate(-50%, -120%); 
     }
     .HotspotAnnotation p {
@@ -128,7 +131,7 @@
         font-size: 1.4rem;
       }
       model-viewer {
-        height: 80vh; /* เพิ่มความสูงบนมือถือ */
+        height: 80vh; 
         border-radius: 0;
       }
     }
@@ -162,7 +165,31 @@
       <p>รองรับ 8 ที่นั่ง, มีช่องต่อไฟฟ้า/LAN</p>
     </div>
 
-    
+        <button 
+      class="Hotspot" 
+      slot="hotspot-screen" 
+      data-position="0 1.2 -1.5" 
+      data-normal="0 0 -1"
+      data-annotation-id="annotation-screen">
+      2
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-screen" id="annotation-screen">
+      <p><strong>จุดที่ 2: จอแสดงผล 80 นิ้ว</strong></p>
+      <p>ความละเอียด 4K, รองรับการประชุมทางไกล</p>
+    </div>
+
+        <button 
+      class="Hotspot" 
+      slot="hotspot-chair" 
+      data-position="-1.5 0.5 1.0" 
+      data-normal="0 1 0"
+      data-annotation-id="annotation-chair">
+      3
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-chair" id="annotation-chair">
+      <p><strong>จุดที่ 3: เก้าอี้ Ergonomic</strong></p>
+      <p>ปรับระดับได้, เหมาะสำหรับการนั่งนาน</p>
+    </div>
     
     <button slot="ar-button" class="ar-button">
       👓 View in AR
@@ -176,15 +203,20 @@
       const modelViewer = document.getElementById('viewer');
       const hotspots = modelViewer.querySelectorAll('.Hotspot');
 
+      // 💡 เริ่มต้น: ซ่อน Pop-up ทั้งหมดเมื่อโหลดหน้าจอ
+      modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
+        ann.classList.remove('visible');
+      });
+
       hotspots.forEach(hotspot => {
         hotspot.addEventListener('click', (event) => {
-          event.stopPropagation(); // ป้องกันการขัดแย้งของ Event
+          event.stopPropagation();
           
           const annotationId = event.currentTarget.dataset.annotationId;
           const targetAnnotation = document.getElementById(annotationId);
 
           if (targetAnnotation) {
-            // 1. ซ่อน Annotation และ Hotspot ที่ไม่เกี่ยวข้อง
+            // 1. ซ่อน Annotation และ Hotspot ที่ไม่เกี่ยวข้อง (ถ้ามี)
             modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
               if (ann !== targetAnnotation) {
                 ann.classList.remove('visible');
@@ -203,7 +235,7 @@
         });
       });
 
-      // [Optional] ปิด Annotation เมื่อคลิกบนพื้นที่ว่างของโมเดล
+      // ปิด Annotation เมื่อคลิกบนพื้นที่ว่างของโมเดล
       modelViewer.addEventListener('click', () => {
         // ซ่อนทั้งหมด
         modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
@@ -217,4 +249,3 @@
   </script>
 </body>
 </html>
-
