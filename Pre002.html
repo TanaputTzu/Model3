@@ -146,29 +146,39 @@
 
 
 <script type="module">
+  import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+
   const viewer = document.querySelector("#viewer");
   const infoBox = document.getElementById("infoBox");
 
-  // เมื่อโหลดโมเดลเสร็จ
   viewer.addEventListener("load", () => {
-    const scene = viewer.sceneGraph;
+    console.log("MODEL LOADED");
+
+    const threeScene = viewer.model.scene;       // THREE.Scene จาก model-viewer
+    const camera = viewer.getCameraOrbit
+      ? viewer.getCameraOrbit()
+      : null;
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
     viewer.addEventListener("click", (event) => {
       const rect = viewer.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      const hit = viewer.positionAndNormalFromPoint(x, y);
-      if (!hit) return;
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      // หา object ที่โดนคลิก
-      const object = scene.model.getObjectByProperty("id", hit.objectId);
+      // ใช้กล้องของ model-viewer
+      const cam = viewer.getCamera();  // <-- API ที่ถูกต้อง
 
-      if (object) {
-        const name = object.name || "Unknown object";
-        const properties = object.userData || {};  // custom properties
+      raycaster.setFromCamera(mouse, cam);
 
-        showInfoPopup(name, properties);
+      const intersects = raycaster.intersectObjects(threeScene.children, true);
+
+      if (intersects.length > 0) {
+        const obj = intersects[0].object;
+
+        showInfoPopup(obj.name || "ไม่มีชื่อ", obj.userData);
       }
     });
   });
@@ -181,13 +191,13 @@
       <pre>${JSON.stringify(properties, null, 2)}</pre>
     `;
 
-    // ซ่อนอัตโนมัติหลัง 6 วิ
     clearTimeout(window.infoTimer);
     window.infoTimer = setTimeout(() => {
       infoBox.style.display = "none";
     }, 6000);
   }
 </script>
+
 
 </body>
 </html>
