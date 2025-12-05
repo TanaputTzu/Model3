@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer with Clickable Hotspots - Responsive (PC Optimized)</title>
+  <title>3D Model AR Viewer with Single Clickable Hotspot</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
@@ -19,24 +19,23 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      justify-content: flex-start;
+      min-height: 100vh; /* เปลี่ยน height เป็น min-height เพื่อให้มี Footer */
       overflow-x: hidden;
     }
 
     h1 {
-      font-size: 1.8rem; /* เพิ่มขนาดหัวข้อเล็กน้อยสำหรับ PC */
+      font-size: 1.6rem;
       text-align: center;
-      margin: 15px 0; /* เพิ่มระยะห่างเล็กน้อย */
+      margin: 12px 0;
       color: #333;
     }
 
     model-viewer {
-      width: 95%;
-      max-width: 1200px; /* **[PC Optimization 1]** เพิ่ม max-width ให้ใช้พื้นที่บน PC จอใหญ่ได้มากขึ้น */
-      
-      /* 📐 การปรับขนาดหลักสำหรับ model-viewer: เพิ่มความสูงให้เหมาะสมกับ PC */
-      height: 80vh; /* **[PC Optimization 2]** ใช้ความสูง 80% ของ Viewport Height (vh) เพื่อแสดงผลได้ใหญ่ขึ้นบน PC */
-      
+      width: 95%; /* ใช้ 95% เพื่อความสวยงาม */
+      max-width: 900px;
+      height: auto;
+      aspect-ratio: 16 / 9; /* กำหนดสัดส่วนเริ่มต้นสำหรับ Desktop */
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
@@ -61,16 +60,17 @@
       transition: 0.3s;
       z-index: 10;
     }
+
     .ar-button:hover {
       transform: translateX(-50%) scale(1.05);
     }
-
-    /* 🔴 Hotspots และ Annotation CSS */
+    
+    /* --- Hotspot & Annotation Styles --- */
     .Hotspot {
       background: #007bff;
       border-radius: 50%;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border: 3px solid white;
       cursor: pointer;
       transition: 0.2s;
@@ -79,21 +79,22 @@
       justify-content: center;
       font-weight: bold;
       color: white;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
     }
     .Hotspot.active {
       background: #ff4500;
       transform: scale(1.2);
     }
+
     .HotspotAnnotation {
       background-color: white;
       padding: 10px 15px;
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       border: 1px solid #ccc;
-      pointer-events: none;
+      pointer-events: none; /* ทำให้สามารถคลิกผ่านกล่องข้อความไปยังโมเดลได้ */
       position: absolute;
-      min-width: 180px;
+      min-width: 200px;
       transform: translate(-50%, -100%);
       opacity: 0;
       transition: opacity 0.3s, transform 0.3s;
@@ -101,7 +102,7 @@
     }
     .HotspotAnnotation.visible {
       opacity: 1;
-      transform: translate(-50%, -120%);
+      transform: translate(-50%, -120%); /* ขยับขึ้นเล็กน้อยเมื่อแสดง */
     }
     .HotspotAnnotation p {
       margin: 2px 0;
@@ -111,29 +112,31 @@
     .HotspotAnnotation strong {
       color: #007bff;
     }
-
-    /* 📱 Responsive Styles สำหรับมือถือ */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.4rem;
-        margin: 10px 0;
-      }
-      model-viewer {
-        /* ปรับความสูงลงเล็กน้อยสำหรับมือถือ */
-        height: 75vh;
-        border-radius: 0;
-      }
-      .ar-button {
-        font-size: 0.9rem;
-        padding: 10px 20px;
-      }
-    }
+    /* --- End Hotspot Styles --- */
 
     footer {
       margin: 15px 0;
       font-size: 0.9rem;
       color: #666;
       text-align: center;
+    }
+
+    /* 📱 สำหรับมือถือแนวตั้ง */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+      model-viewer {
+        aspect-ratio: 4 / 5;
+      }
+    }
+
+    /* 📱 สำหรับ iPad หรือแท็บเล็ต */
+    @media (min-width: 481px) and (max-width: 1024px) {
+      model-viewer {
+        aspect-ratio: 3 / 2;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -157,39 +160,15 @@
       slot="hotspot-table" 
       data-position="-0.7 0.7 0" 
       data-normal="0 1 0" 
-      data-annotation-id="annotation-table">
-      1
+      data-annotation-id="annotation-table"
+      title="คลิกเพื่อดูรายละเอียดโต๊ะ">
+      i
     </button>
-    <div class="HotspotAnnotation" slot="hotspot-annotation-table" id="annotation-table">
-      <p><strong>จุดที่ 1: โต๊ะประชุม</strong></p>
-      <p>รองรับผู้เข้าร่วมประชุม 8 ท่าน</p>
-      <p>มีช่องต่อไฟฟ้าและสาย LAN ในตัว</p>
-    </div>
 
-        <button 
-      class="Hotspot" 
-      slot="hotspot-screen" 
-      data-position="0 1.2 -1.5" 
-      data-normal="0 0 -1"
-      data-annotation-id="annotation-screen">
-      2
-    </button>
-    <div class="HotspotAnnotation" slot="hotspot-annotation-screen" id="annotation-screen">
-      <p><strong>จุดที่ 2: จอแสดงผล 80 นิ้ว</strong></p>
-      <p>ความละเอียด 4K, รองรับการประชุมทางไกล</p>
-    </div>
-
-        <button 
-      class="Hotspot" 
-      slot="hotspot-chair" 
-      data-position="-1.5 0.5 1.0" 
-      data-normal="0 1 0"
-      data-annotation-id="annotation-chair">
-      3
-    </button>
-    <div class="HotspotAnnotation" slot="hotspot-annotation-chair" id="annotation-chair">
-      <p><strong>จุดที่ 3: เก้าอี้ Ergonomic</strong></p>
-      <p>ปรับระดับได้, เหมาะสำหรับการนั่งนาน</p>
+        <div class="HotspotAnnotation" slot="hotspot-annotation-table" id="annotation-table">
+      <p><strong>จุด: โต๊ะประชุมอัจฉริยะ</strong></p>
+      <p>รองรับ 8 ที่นั่ง</p>
+      <p>มีระบบไฟฟ้าและ LAN ในตัว</p>
     </div>
 
     <button slot="ar-button" class="ar-button">
@@ -202,31 +181,24 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const modelViewer = document.getElementById('viewer');
-      const hotspots = modelViewer.querySelectorAll('.Hotspot');
+      const tableHotspot = modelViewer.querySelector('.Hotspot');
+      const tableAnnotation = document.getElementById('annotation-table');
 
-      hotspots.forEach(hotspot => {
-        hotspot.addEventListener('click', (event) => {
-          const annotationId = event.currentTarget.dataset.annotationId;
-          const targetAnnotation = document.getElementById(annotationId);
-
-          if (targetAnnotation) {
-            // ซ่อน Annotation และ Hotspot ที่ไม่เกี่ยวข้อง
-            modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
-              if (ann !== targetAnnotation) {
-                ann.classList.remove('visible');
-              }
-            });
-            modelViewer.querySelectorAll('.Hotspot').forEach(h => {
-              if (h !== hotspot) {
-                h.classList.remove('active');
-              }
-            });
-
-            // สลับการแสดงผล (Toggle)
-            targetAnnotation.classList.toggle('visible');
-            hotspot.classList.toggle('active');
-          }
+      if (tableHotspot) {
+        tableHotspot.addEventListener('click', () => {
+          // สลับสถานะ Active ของ Hotspot
+          tableHotspot.classList.toggle('active');
+          // สลับการแสดงผลของ Annotation
+          tableAnnotation.classList.toggle('visible');
         });
+      }
+
+      // [Optional] ปิด Annotation เมื่อคลิกที่อื่นในโมเดล
+      modelViewer.addEventListener('click', (event) => {
+        if (event.target !== tableHotspot && tableAnnotation.classList.contains('visible')) {
+          tableAnnotation.classList.remove('visible');
+          tableHotspot.classList.remove('active');
+        }
       });
     });
   </script>
