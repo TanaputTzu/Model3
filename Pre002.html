@@ -149,47 +149,62 @@
   const infoBox = document.getElementById("infoBox");
 
   viewer.addEventListener("load", () => {
+    console.log("MODEL LOADED");
     const scene = viewer.sceneGraph;
 
     viewer.addEventListener("click", (event) => {
+
+      console.log("CLICK DETECTED");
+
       const rect = viewer.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       const hit = viewer.positionAndNormalFromPoint(x, y);
-      if (!hit) return;
+      console.log("HIT RESULT:", hit);
 
-      const object = scene.model.getObjectByProperty("id", hit.objectId);
-
-      if (object) {
-        const name = object.name || "Unknown object";
-
-        const data = {
-          ...object.extras,
-          ...object.userData
-        };
-
-        if (!data || Object.keys(data).length === 0) {
-          showInfoPopup(name, { "ไม่มีข้อมูล Custom Properties": "กรุณาเพิ่ม extras.* ใน Blender" });
-        } else {
-          showInfoPopup(name, data);
-        }
+      if (!hit) {
+        showInfoPopup("No Hit", { Error: "ไม่ได้แตะโดนวัตถุใด ๆ" });
+        return;
       }
+
+      const sceneModel = scene.model;
+      console.log("SCENE MODEL:", sceneModel);
+
+      const object = sceneModel.getObjectByProperty("id", hit.objectId);
+      console.log("FOUND OBJECT:", object);
+
+      if (!object) {
+        showInfoPopup("Object Not Found", { 
+          Error: "พบ hit แต่ไม่มี object ที่ตรงกับ objectId" 
+        });
+        return;
+      }
+
+      const data = {
+        name: object.name || "(no name)",
+        extras: object.extras || "no extras",
+        userData: object.userData || "no userData",
+        objectId: hit.objectId
+      };
+
+      console.log("FINAL DATA:", data);
+
+      showInfoPopup("OBJECT INFO", data);
     });
   });
 
-  function showInfoPopup(name, properties) {
+  function showInfoPopup(title, data) {
     infoBox.style.display = "block";
-
     infoBox.innerHTML = `
-      <h3>${name}</h3>
-      <pre>${JSON.stringify(properties, null, 2)}</pre>
+      <h3>${title}</h3>
+      <pre>${JSON.stringify(data, null, 2)}</pre>
     `;
 
     clearTimeout(window.infoTimer);
     window.infoTimer = setTimeout(() => {
       infoBox.style.display = "none";
-    }, 6000);
+    }, 8000);
   }
 </script>
 
