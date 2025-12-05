@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Model Loader</title>
+    <title>Three.js AR Model</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #infoBox {
+            display: none;
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.75);
-            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 10px 15px;
             color: white;
-            border-radius: 10px;
-            font-size: 16px;
-            display: none;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -24,79 +23,74 @@
 <body>
     <div id="infoBox"></div>
 
-    <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
-        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/loaders/GLTFLoader.js';
-        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/webxr/ARButton.js';
+<script type="module">
 
-        let camera, scene, renderer, controller;
-        let model = null;
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/loaders/GLTFLoader.js';
+import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/webxr/ARButton.js';
 
-        init();
-        animate();
+let scene, camera, renderer, controller, model;
 
-        function init() {
-            scene = new THREE.Scene();
+init();
+animate();
 
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+function init() {
+    scene = new THREE.Scene();
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.xr.enabled = true;
-            document.body.appendChild(renderer.domElement);
+    camera = new THREE.PerspectiveCamera(
+        70, window.innerWidth / window.innerHeight, 0.01, 20
+    );
 
-            // AR Button
-            document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
 
-            // Touch Controller
-            controller = renderer.xr.getController(0);
-            controller.addEventListener('select', onSelect);
-            scene.add(controller);
+    document.body.appendChild(
+        ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] })
+    );
 
-            // Light
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-            scene.add(light);
+    controller = renderer.xr.getController(0);
+    controller.addEventListener('select', placeModel);
+    scene.add(controller);
 
-            // Load your GLB model
-            const loader = new GLTFLoader();
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    scene.add(light);
 
-            loader.load(
-                "https://modelagency.pw/ggaa_ZZ.glb",
-                function (gltf) {
-                    model = gltf.scene;
-                    model.scale.set(0.2, 0.2, 0.2); // ปรับขนาดได้
-                    console.log("โมเดลโหลดแล้ว");
-                },
-                undefined,
-                function (err) {
-                    console.error("โหลดโมเดลไม่สำเร็จ:", err);
-                }
-            );
+    const loader = new GLTFLoader();
+
+    loader.load(
+        "https://modelagency.pw/ggaa_ZZ.glb",
+        (gltf) => {
+            model = gltf.scene;
+            model.scale.set(0.2, 0.2, 0.2);
+            console.log("โมเดลโหลดสำเร็จ");
+        },
+        undefined,
+        (error) => {
+            console.error("โหลดโมเดลล้มเหลว:", error);
         }
+    );
+}
 
-        function onSelect() {
-            if (!model) return;
+function placeModel() {
+    if (!model) return;
 
-            // วางโมเดลด้านหน้ากล้อง 0.5 เมตร
-            const position = new THREE.Vector3(0, 0, -0.5).applyMatrix4(controller.matrixWorld);
-            model.position.copy(position);
-            scene.add(model);
+    const pos = new THREE.Vector3(0, 0, -0.5)
+        .applyMatrix4(controller.matrixWorld);
 
-            showInfo("ข้อมูลวัตถุ:\nModel Loaded: ggaa_ZZ.glb\nวางโมเดลเรียบร้อยแล้ว!");
-        }
+    model.position.copy(pos);
+    scene.add(model);
 
-        function showInfo(text) {
-            const box = document.getElementById("infoBox");
-            box.innerText = text;
-            box.style.display = "block";
-            setTimeout(() => { box.style.display = "none"; }, 3000);
-        }
+    showInfo("โมเดลถูกวางแล้ว: ggaa_ZZ.glb");
+}
 
-        function animate() {
-            renderer.setAnimationLoop(() => {
-                renderer.render(scene, camera);
-            });
-        }
-    </script>
-</body>
-</html>
+function showInfo(text) {
+    const box = document.getElementById("infoBox");
+    box.textContent = text;
+    box.style.display = "block";
+    setTimeout(() => box.style.display = "none", 2500);
+}
+
+function animate() {
+    renderer.se
