@@ -1,119 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Viewer Non-Module</title>
-  <style>
-    body { margin: 0; overflow: hidden; font-family: sans-serif; }
-    #info-box {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 260px;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-  </style>
+    <title>AR Model Viewer with Data</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <style>
+        /* CSS สำหรับจัดรูปแบบ hotspot */
+        .Hotspot {
+            background: #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            cursor: pointer;
+        }
+        .HotspotAnnotation {
+            position: absolute;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            pointer-events: none; /* ทำให้คลิกผ่านไปที่ Hotspot ได้ */
+            opacity: 0;
+            transition: opacity 0.3s;
+            transform: translate(-50%, -100%); /* จัดตำแหน่งเหนือจุด */
+        }
+        .Hotspot:hover + .HotspotAnnotation,
+        .HotspotAnnotation.visible {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+    <model-viewer 
+        src="https://modelagency.pw/PCL.glb" 
+        ar 
+        ar-modes="webxr scene-viewer quick-look" 
+        camera-controls 
+        alt="A 3D model of your object" 
+        shadow-intensity="1">
 
-<div id="info-box">
-  <h2>Object Info</h2>
-  <div id="info-content">Click a part to inspect</div>
-</div>
+        <button class="Hotspot" slot="hotspot-1" data-position="0.5 1.0 0" data-normal="0 1 0"></button>
+        <div class="HotspotAnnotation" slot="hotspot-annotation-1">
+            **ชื่อชิ้นส่วน:** ส่วนบน<br>
+            **รายละเอียด:** วัสดุทำจากไทเทเนียม
+        </div>
 
-<!-- Load Three.js and dependencies as global scripts -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.161/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.161/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.161/examples/js/controls/OrbitControls.js"></script>
+        <button class="Hotspot" slot="hotspot-2" data-position="-0.5 0.2 0.3" data-normal="0 0 1"></button>
+        <div class="HotspotAnnotation" slot="hotspot-annotation-2">
+            **น้ำหนัก:** 1.5 กิโลกรัม<br>
+            **หมายเลขซีเรียล:** SN12345
+        </div>
 
-<script>
-// ----- Scene Setup -----
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(2,2,4);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-// Lights
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(2,2,2);
-scene.add(directionalLight);
-
-// ----- Load GLB Model -----
-const loader = new THREE.GLTFLoader();
-let mixer = null;
-
-// เปลี่ยน URL นี้เป็นโมเดลของคุณ
-const modelURL = "https://modelagency.pw/PCL.glb";
-
-loader.load(modelURL, function(gltf){
-  scene.add(gltf.scene);
-
-  if(gltf.animations && gltf.animations.length){
-    mixer = new THREE.AnimationMixer(gltf.scene);
-    gltf.animations.forEach(function(clip){
-      const action = mixer.clipAction(clip);
-      action.play();
-    });
-  }
-}, undefined, function(error){
-  console.error('Error loading model:', error);
-});
-
-// ----- Raycaster for click detection -----
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let selected = null;
-
-window.addEventListener("click", function(event){
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(scene.children, true);
-
-  if(hits.length > 0){
-    const obj = hits[0].object;
-
-    if(selected && selected.material && selected.material.emissive){
-      selected.material.emissive.setHex(0x000000);
-    }
-    selected = obj;
-    if(obj.material && obj.material.emissive){
-      obj.material.emissive.setHex(0xffff00);
-    }
-
-    const data = Object.keys(obj.userData).length ? JSON.stringify(obj.userData, null,2) : "No custom properties";
-    document.getElementById("info-content").innerHTML = `<strong>${obj.name}</strong><br><pre>${data}</pre>`;
-  }
-});
-
-// ----- Animation Loop -----
-const clock = new THREE.Clock();
-function animate(){
-  requestAnimationFrame(animate);
-  const delta = clock.getDelta();
-  if(mixer) mixer.update(delta);
-  renderer.render(scene, camera);
-}
-animate();
-
-// ----- Handle Window Resize -----
-window.addEventListener('resize', function(){
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-</script>
-
+    </model-viewer>
 </body>
 </html>
