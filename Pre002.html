@@ -33,6 +33,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
+// Scene, Camera, Renderer
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
 camera.position.set(2, 2, 4);
@@ -41,18 +42,23 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
+
+// Lights
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(2, 2, 2);
 scene.add(directionalLight);
 
+// GLTF Loader & Animation Mixer
 const loader = new GLTFLoader();
 let mixer = null;
 
-loader.load('model/model.glb', (gltf) => {
+loader.load('https://modelagency.pw/PCL.glb', (gltf) => {
   scene.add(gltf.scene);
 
+  // Play animations if exist
   if (gltf.animations && gltf.animations.length) {
     mixer = new THREE.AnimationMixer(gltf.scene);
     gltf.animations.forEach((clip) => {
@@ -60,10 +66,46 @@ loader.load('model/model.glb', (gltf) => {
       action.play();
     });
   }
+}, undefined, (error) => {
+  console.error('Error loading model:', error);
 });
 
-const clock = new THREE.Clock();
+// Raycaster for click detection
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let selected = null;
 
+window.addEventListener("click", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+
+  if (hits.length > 0) {
+    const obj = hits[0].object;
+
+    // Highlight selected
+    if (selected && selected.material && selected.material.emissive) {
+      selected.material.emissive.setHex(0x000000);
+    }
+    selected = obj;
+    if (obj.material && obj.material.emissive) {
+      obj.material.emissive.setHex(0xffff00);
+    }
+
+    // Show custom properties
+    const data = Object.keys(obj.userData).length
+      ? JSON.stringify(obj.userData, null, 2)
+      : "No custom properties";
+
+    document.getElementById("info-content").innerHTML =
+      `<strong>${obj.name}</strong><br><pre>${data}</pre>`;
+  }
+});
+
+// Animation loop
+const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
 
@@ -72,51 +114,10 @@ function animate() {
 
   renderer.render(scene, camera);
 }
-
 animate();
 
+// Handle window resize
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-
-// Raycaster
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let selected = null;
-
-window.addEventListener("click", (event) => {
-
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-
-  const hits = raycaster.intersectObjects(scene.children, true);
-  if (hits.length > 0) {
-    const obj = hits[0].object;
-
-    const data = Object.keys(obj.userData).length
-      ? JSON.stringify(obj.userData, null, 2)
-      : "No custom properties";
-
-    document.getElementById("info-content").innerHTML =
-      `<strong>${obj.name}</strong><br><pre>${data}</pre>`;
-  }
-
-});
-
-// Render loop
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
-
-// Resize fix
-window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
