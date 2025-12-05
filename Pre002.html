@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer with Clickable Hotspot</title>
+  <title>3D Model AR Viewer with Numbered Hotspots</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
@@ -21,7 +21,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      min-height: 100vh; /* เต็มจอ */
+      min-height: 100vh; 
       overflow-x: hidden;
     }
 
@@ -32,20 +32,18 @@
       color: #333;
     }
 
-    /* 🟢 **การแก้ไขขนาด model-viewer ให้เสถียร** */
+    /* การกำหนดขนาด Model Viewer ด้วย vh เพื่อความเสถียร */
     model-viewer {
       width: 95%; 
       max-width: 900px;
-      /* 1. กำหนดความสูงด้วย vh เพื่อให้มีพื้นที่แน่นอน */
-      height: 75vh; 
+      height: 75vh; /* 🟢 กำหนดความสูงให้มองเห็นได้ชัดเจน */
       
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
-      /* 2. ลบ flex-grow: 1; ออกเพื่อป้องกันการบีบอัด */
     }
 
-    /* ปุ่ม AR (ตำแหน่งที่ควรอยู่ด้านล่างโมเดล) */
+    /* ปุ่ม AR */
     .ar-button {
       background: linear-gradient(135deg, #ff6600, #ff9900);
       color: white;
@@ -68,12 +66,12 @@
       transform: translateX(-50%) scale(1.05);
     }
     
-    /* --- Hotspot & Annotation Styles (เหมือนเดิม) --- */
+    /* --- Hotspot & Annotation Styles (แสดงผลเป็นตัวเลข) --- */
     .Hotspot {
       background: #007bff;
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
+      width: 22px; /* ขนาดใหญ่ขึ้นเล็กน้อยเพื่อให้เห็นตัวเลขชัดเจน */
+      height: 22px;
       border: 3px solid white;
       cursor: pointer;
       transition: 0.2s;
@@ -99,12 +97,12 @@
       position: absolute;
       min-width: 200px;
       transform: translate(-50%, -100%);
-      opacity: 0; /* 🟢 ซ่อนข้อความเริ่มต้น */
+      opacity: 0; /* ซ่อนข้อความเริ่มต้น */
       transition: opacity 0.3s, transform 0.3s;
       z-index: 5;
     }
     .HotspotAnnotation.visible {
-      opacity: 1; /* 🟢 แสดง Pop-up เมื่อกด */
+      opacity: 1; /* แสดง Pop-up เมื่อกด */
       transform: translate(-50%, -120%); 
     }
     .HotspotAnnotation p {
@@ -156,17 +154,40 @@
       slot="hotspot-table" 
       data-position="-0.7 0.7 0" 
       data-normal="0 1 0" 
-      data-annotation-id="annotation-table"
-      title="คลิกเพื่อดูรายละเอียดโต๊ะ">
-      i
+      data-annotation-id="annotation-table">
+      1
     </button>
-
     <div class="HotspotAnnotation" slot="hotspot-annotation-table" id="annotation-table">
-      <p><strong>จุด: โต๊ะประชุมอัจฉริยะ</strong></p>
-      <p>รองรับ 8 ที่นั่ง</p>
-      <p>มีระบบไฟฟ้าและ LAN ในตัว</p>
+      <p><strong>จุดที่ 1: โต๊ะประชุมอัจฉริยะ</strong></p>
+      <p>รองรับ 8 ที่นั่ง, มีช่องต่อไฟฟ้า/LAN</p>
     </div>
 
+        <button 
+      class="Hotspot" 
+      slot="hotspot-screen" 
+      data-position="0 1.2 -1.5" 
+      data-normal="0 0 -1"
+      data-annotation-id="annotation-screen">
+      2
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-screen" id="annotation-screen">
+      <p><strong>จุดที่ 2: จอแสดงผล 80 นิ้ว</strong></p>
+      <p>ความละเอียด 4K, รองรับการประชุมทางไกล</p>
+    </div>
+
+        <button 
+      class="Hotspot" 
+      slot="hotspot-chair" 
+      data-position="-1.5 0.5 1.0" 
+      data-normal="0 1 0"
+      data-annotation-id="annotation-chair">
+      3
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-chair" id="annotation-chair">
+      <p><strong>จุดที่ 3: เก้าอี้ Ergonomic</strong></p>
+      <p>ปรับระดับได้, เหมาะสำหรับการนั่งนาน</p>
+    </div>
+    
     <button slot="ar-button" class="ar-button">
       👓 View in AR
     </button>
@@ -177,28 +198,44 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const modelViewer = document.getElementById('viewer');
-      // ใช้ querySelectorAll เพื่อให้มั่นใจว่าหา Hotspot ถูกต้อง
-      const tableHotspot = modelViewer.querySelector('[slot="hotspot-table"]');
-      const tableAnnotation = document.getElementById('annotation-table');
+      const hotspots = modelViewer.querySelectorAll('.Hotspot');
 
-      if (tableHotspot) {
-        tableHotspot.addEventListener('click', (event) => {
-          // ป้องกันการ Propagation ของ Event (อาจจะช่วยให้การคลิกทำงานดีขึ้น)
-          event.stopPropagation();
-          // สลับสถานะ Active ของ Hotspot
-          tableHotspot.classList.toggle('active');
-          // สลับการแสดงผลของ Annotation (Pop-up)
-          tableAnnotation.classList.toggle('visible');
+      hotspots.forEach(hotspot => {
+        hotspot.addEventListener('click', (event) => {
+          event.stopPropagation(); // ป้องกันการขัดแย้งของ Event
+          
+          const annotationId = event.currentTarget.dataset.annotationId;
+          const targetAnnotation = document.getElementById(annotationId);
+
+          if (targetAnnotation) {
+            // 1. ซ่อน Annotation และ Hotspot ที่ไม่เกี่ยวข้อง
+            modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
+              if (ann !== targetAnnotation) {
+                ann.classList.remove('visible');
+              }
+            });
+            modelViewer.querySelectorAll('.Hotspot').forEach(h => {
+              if (h !== hotspot) {
+                h.classList.remove('active');
+              }
+            });
+
+            // 2. สลับการแสดงผล (Toggle) ของ Hotspot และ Pop-up ที่ถูกเลือก
+            targetAnnotation.classList.toggle('visible');
+            hotspot.classList.toggle('active');
+          }
         });
-      }
+      });
 
-      // ปิด Annotation เมื่อคลิกที่อื่นในโมเดล
-      modelViewer.addEventListener('click', (event) => {
-        // เช็คว่าไม่ได้คลิกโดน Hotspot และ Annotation กำลังแสดงอยู่
-        if (event.target !== tableHotspot && tableAnnotation.classList.contains('visible')) {
-          tableAnnotation.classList.remove('visible');
-          tableHotspot.classList.remove('active');
-        }
+      // [Optional] ปิด Annotation เมื่อคลิกบนพื้นที่ว่างของโมเดล
+      modelViewer.addEventListener('click', () => {
+        // ซ่อนทั้งหมด
+        modelViewer.querySelectorAll('.HotspotAnnotation').forEach(ann => {
+          ann.classList.remove('visible');
+        });
+        modelViewer.querySelectorAll('.Hotspot').forEach(h => {
+          h.classList.remove('active');
+        });
       });
     });
   </script>
