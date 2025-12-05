@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebXR AR Example</title>
+    <title>AR Model Loader</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #infoBox {
@@ -11,18 +11,18 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
-            padding: 12px 18px;
+            background: rgba(0,0,0,0.75);
+            padding: 12px 20px;
             color: white;
-            display: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
+            display: none;
         }
     </style>
 </head>
 
 <body>
-    <div id="infoBox">ข้อมูลวัตถุ</div>
+    <div id="infoBox"></div>
 
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
@@ -38,64 +38,58 @@
         function init() {
             scene = new THREE.Scene();
 
-            camera = new THREE.PerspectiveCamera(
-                70,
-                window.innerWidth / window.innerHeight,
-                0.01,
-                20
-            );
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
             document.body.appendChild(renderer.domElement);
 
+            // AR Button
             document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
 
-            // Controller สำหรับแตะหน้าจอ
+            // Touch Controller
             controller = renderer.xr.getController(0);
             controller.addEventListener('select', onSelect);
             scene.add(controller);
 
-            // โหลดโมเดล GLB (ถ้าคุณมี model.glb)
-            const loader = new GLTFLoader();
-            loader.load(
-                'https://modelagency.pw/ggaa_ZZ.glb',
-                (gltf) => {
-                    model = gltf.scene;
-                    model.scale.set(0.2, 0.2, 0.2);
-                },
-                undefined,
-                () => {
-                    // ถ้า GLB ไม่มี จะสร้างกล่องแทน
-                    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-                    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-                    model = new THREE.Mesh(geometry, material);
-                }
-            );
-
-            // แสง
+            // Light
             const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
             scene.add(light);
+
+            // Load your GLB model
+            const loader = new GLTFLoader();
+
+            loader.load(
+                "https://modelagency.pw/ggaa_ZZ.glb",
+                function (gltf) {
+                    model = gltf.scene;
+                    model.scale.set(0.2, 0.2, 0.2); // ปรับขนาดได้
+                    console.log("โมเดลโหลดแล้ว");
+                },
+                undefined,
+                function (err) {
+                    console.error("โหลดโมเดลไม่สำเร็จ:", err);
+                }
+            );
         }
 
         function onSelect() {
             if (!model) return;
 
-            // วางโมเดลด้านหน้ากล้อง
-            const pos = new THREE.Vector3(0, 0, -0.5).applyMatrix4(controller.matrixWorld);
-            model.position.copy(pos);
+            // วางโมเดลด้านหน้ากล้อง 0.5 เมตร
+            const position = new THREE.Vector3(0, 0, -0.5).applyMatrix4(controller.matrixWorld);
+            model.position.copy(position);
             scene.add(model);
 
-            // แสดงข้อมูล
-            showInfo("ชื่อวัตถุ: โมเดล 3D\nประเภท: วัตถุ AR\nตำแหน่ง: หน้าอุปกรณ์ 0.5m");
+            showInfo("ข้อมูลวัตถุ:\nModel Loaded: ggaa_ZZ.glb\nวางโมเดลเรียบร้อยแล้ว!");
         }
 
         function showInfo(text) {
-            const box = document.getElementById('infoBox');
+            const box = document.getElementById("infoBox");
             box.innerText = text;
-            box.style.display = 'block';
-            setTimeout(() => { box.style.display = 'none'; }, 2500);
+            box.style.display = "block";
+            setTimeout(() => { box.style.display = "none"; }, 3000);
         }
 
         function animate() {
