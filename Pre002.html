@@ -33,31 +33,54 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
-// Create scene
-let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(2,2,4);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(2, 2, 4);
 
-let renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Controls
-let controls = new OrbitControls(camera, renderer.domElement);
-
-// Lights
+const controls = new OrbitControls(camera, renderer.domElement);
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-let dlight = new THREE.DirectionalLight(0xffffff, 1);
-dlight.position.set(2,2,2);
-scene.add(dlight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(2, 2, 2);
+scene.add(directionalLight);
 
-// Load model
 const loader = new GLTFLoader();
-loader.load("https://modelagency.pw/PCL.glb", (gltf) => {
+let mixer = null;
 
+loader.load('model/model.glb', (gltf) => {
   scene.add(gltf.scene);
 
+  if (gltf.animations && gltf.animations.length) {
+    mixer = new THREE.AnimationMixer(gltf.scene);
+    gltf.animations.forEach((clip) => {
+      const action = mixer.clipAction(clip);
+      action.play();
+    });
+  }
 });
+
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  if (mixer) mixer.update(delta);
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
 
 // Raycaster
 const raycaster = new THREE.Raycaster();
