@@ -1,84 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Model Viewer + Custom Properties</title>
-
-  <!-- model-viewer -->
-  <script type="module"
-    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-  </script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js + Custom Properties</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 20px;
-    }
-    #info {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #ccc;
+    body { margin: 0; overflow: hidden; }
+    #infoBox {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 12px;
+      background: rgba(255,255,255,0.9);
       border-radius: 8px;
-      background: #fafafa;
+      font-family: sans-serif;
+      max-width: 300px;
       white-space: pre-wrap;
-    }
-    .prop-block {
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #ddd;
     }
   </style>
 </head>
-
 <body>
 
-  <h2>Model + Custom Properties</h2>
+<div id="infoBox">Loading model...</div>
 
-  <!-- แสดงโมเดล -->
-  <model-viewer id="viewer"
-    src="https://modelagency.pw/PCL.glb"
-    camera-controls
-    auto-rotate
-    ar
-    style="width: 100%; height: 500px;">
-  </model-viewer>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/controls/OrbitControls.js";
 
-  <!-- ส่วนแสดง Custom Properties -->
-  <h3>Custom Properties (from Blender)</h3>
-  <div id="info">Loading properties...</div>
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(2,2,4);
 
-  <!-- โหลด GLTF เพื่อตรวจสอบ Custom Properties -->
-  <script type="module">
-    import { GLTFLoader } 
-    from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
+let renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    const loader = new GLTFLoader();
+let controls = new OrbitControls(camera, renderer.domElement);
 
-    loader.load("model.glb", (gltf) => {
-      const infoBox = document.getElementById("info");
-      infoBox.innerHTML = ""; // เคลียร์ข้อความเดิม
+let light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(2,2,2);
+scene.add(light);
 
-      gltf.scene.traverse((node) => {
-        // Custom Properties จะอยู่ใน userData หรือ extras
-        if (node.userData && Object.keys(node.userData).length > 0) {
-          
-          infoBox.innerHTML += `
-            <div class="prop-block">
-              <strong>Object:</strong> ${node.name}<br>
-              <strong>Properties:</strong><br>
-              <pre>${JSON.stringify(node.userData, null, 2)}</pre>
-            </div>
-          `;
-        }
-      });
+let loader = new GLTFLoader();
 
-      // หากไม่พบ property
-      if (infoBox.innerHTML.trim() === "") {
-        infoBox.innerHTML = "ไม่พบ Custom Properties ในโมเดลนี้";
-      }
-    });
-  </script>
+loader.load("https://modelagency.pw/PCL.glb", (gltf) => {
 
+  scene.add(gltf.scene);
+
+  const infoBox = document.getElementById("infoBox");
+  infoBox.textContent = "";
+
+  gltf.scene.traverse((obj) => {
+    if (obj.userData && Object.keys(obj.userData).length > 0) {
+      infoBox.innerHTML += 
+        `Object: ${obj.name}\n` +
+        `Properties:\n${JSON.stringify(obj.userData, null, 2)}\n\n`;
+    }
+  });
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
 </body>
 </html>
