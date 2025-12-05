@@ -1,202 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer + Object Info</title>
-
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      overflow-x: hidden;
-    }
-
-    h1 {
-      font-size: 1.6rem;
-      text-align: center;
-      margin: 12px 0;
-      color: #333;
-    }
-
-    model-viewer {
-      width: 100%;
-      max-width: 900px;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      background: #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .ar-button {
-      background: linear-gradient(135deg, #ff6600, #ff9900);
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-      transition: 0.3s;
-    }
-
-    .ar-button:hover {
-      transform: translateX(-50%) scale(1.05);
-    }
-
-    footer {
-      margin: 15px 0;
-      font-size: 0.9rem;
-      color: #666;
-      text-align: center;
-    }
-
-    /* INFO POPUP */
-    #infoBox {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ffffff;
-      padding: 18px;
-      border-radius: 14px;
-      width: 85%;
-      max-width: 420px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      font-family: "Segoe UI";
-      z-index: 1000;
-      animation: fadeIn 0.25s ease-out;
-    }
-
-    #infoBox h3 {
-      margin-bottom: 8px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 1.2rem; }
-      model-viewer { aspect-ratio: 4 / 5; }
-    }
-
-    @media (min-width: 481px) and (max-width: 1024px) {
-      model-viewer {
-        aspect-ratio: 3 / 2;
-        max-width: 100%;
-      }
-    }
-
-    @media (min-width: 1025px) {
-      model-viewer {
-        aspect-ratio: 16 / 9;
-        max-width: 900px;
-      }
-    }
-  </style>
+  <meta charset="utf-8">
+  <title>Three.js + GLB จาก URL</title>
+  <style> body { margin:0; overflow:hidden; } </style>
 </head>
-
 <body>
-  <h1>ห้องปฏิบัติการประชุมของสาขา</h1>
-
-  <model-viewer
-    id="viewer"
-    src="https://modelagency.pw/ggaa_ZZ.glb"
-    ios-src="____"
-    alt="3D model"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    auto-rotate
-    autoplay
-    animation-loop>
-    
-    <button slot="ar-button" class="ar-button">
-      👓 View in AR
-    </button>
-  </model-viewer>
-
-  <!-- BOX แสดงข้อมูล -->
-  <div id="infoBox"></div>
-
-  <footer>© 2025 My AR Model</footer>
-
-
 <script type="module">
-  import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
+  import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/loaders/GLTFLoader.js';
 
-  const viewer = document.querySelector("#viewer");
-  const infoBox = document.getElementById("infoBox");
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 20);
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-  viewer.addEventListener("load", () => {
-    console.log("MODEL LOADED");
+  const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+  scene.add(light);
 
-    const sceneGraph = viewer.getScene();  // <-- scene graph object
-    const threeScene = sceneGraph.children; // <-- รายการ object ในฉาก
+  const loader = new GLTFLoader();
+  loader.load(
+    'https://modelagency.pw/ggaa_ZZ.glb',
+    (gltf) => {
+      const model = gltf.scene;
+      model.scale.set(0.2, 0.2, 0.2);
+      scene.add(model);
+      renderer.render(scene, camera);
+    },
+    undefined,
+    (error) => {
+      console.error('Error loading GLB:', error);
+    }
+  );
 
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+  camera.position.z = 1;
 
-    viewer.addEventListener("click", (event) => {
-      const rect = viewer.getBoundingClientRect();
-
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      // ใช้กล้องของ model-viewer
-      const cam = viewer.getCamera();  // <-- API ที่ถูกต้องของ scene-graph API
-
-      raycaster.setFromCamera(mouse, cam);
-
-      // ทำ Raycast
-      const intersects = raycaster.intersectObjects(threeScene, true);
-
-      if (intersects.length > 0) {
-        const obj = intersects[0].object;
-
-        showInfoPopup(obj.name || "ไม่มีชื่อ", obj.userData);
-      }
-    });
-  });
-
-  function showInfoPopup(name, properties) {
-    infoBox.style.display = "block";
-
-    infoBox.innerHTML = `
-      <h3>${name}</h3>
-      <pre>${JSON.stringify(properties, null, 2)}</pre>
-    `;
-
-    clearTimeout(window.infoTimer);
-    window.infoTimer = setTimeout(() => {
-      infoBox.style.display = "none";
-    }, 6000);
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
   }
+  animate();
 </script>
-
-
 </body>
 </html>
