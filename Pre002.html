@@ -1,98 +1,193 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>ห้องปฏิบัติการประชุมของสาขา</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D Model AR Viewer + Object Info</title>
 
-  <script type="module"
-    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-  </script>
-
-  <script type="module"
-    src="https://unpkg.com/three@0.152.2/build/three.module.js"></script>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 0; background: #fafafa; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      text-align: center;
+      margin: 12px 0;
+      color: #333;
+    }
+
+    model-viewer {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      background: #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ar-button {
+      background: linear-gradient(135deg, #ff6600, #ff9900);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: 0.3s;
+    }
+
+    .ar-button:hover {
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    footer {
+      margin: 15px 0;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+    }
+
+    /* INFO POPUP */
     #infoBox {
-      margin-top: 20px; padding: 15px; width: 350px;
-      background: white; box-shadow: 0px 2px 10px rgba(0,0,0,0.10);
-      border-radius: 10px; display: inline-block; text-align: left;
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 14px;
+      width: 85%;
+      max-width: 420px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      font-family: "Segoe UI";
+      z-index: 1000;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    #infoBox h3 {
+      margin-bottom: 8px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.2rem; }
+      model-viewer { aspect-ratio: 4 / 5; }
+    }
+
+    @media (min-width: 481px) and (max-width: 1024px) {
+      model-viewer {
+        aspect-ratio: 3 / 2;
+        max-width: 100%;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      model-viewer {
+        aspect-ratio: 16 / 9;
+        max-width: 900px;
+      }
     }
   </style>
 </head>
 
 <body>
+  <h1>ห้องปฏิบัติการประชุมของสาขา</h1>
 
-  <h2>ห้องปฏิบัติการประชุมของสาขา</h2>
-
-  <model-viewer id="viewer"
+  <model-viewer
+    id="viewer"
     src="https://modelagency.pw/ggaa_ZZ.glb"
+    ios-src="____"
+    alt="3D model"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
     camera-controls
-    exposure="1"
-    touch-action="none"
-    disable-zoom
-    style="width: 800px; height: 500px; background:#ddd; border-radius:15px;">
+    auto-rotate
+    autoplay
+    animation-loop>
+    
+    <button slot="ar-button" class="ar-button">
+      👓 View in AR
+    </button>
   </model-viewer>
 
-  <div id="infoBox">
-    <b>ผลลัพธ์:</b>
-    <pre id="output">ยังไม่ได้คลิกโมเดล</pre>
-  </div>
+  <!-- BOX แสดงข้อมูล -->
+  <div id="infoBox"></div>
 
-  <script type="module">
-  import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+  <footer>© 2025 My AR Model</footer>
 
-  const viewer = document.getElementById("viewer");
-  const output = document.getElementById("output");
 
-  const raycaster = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
+<script type="module">
+  const viewer = document.querySelector("#viewer");
+  const infoBox = document.getElementById("infoBox");
 
-  let threeScene = null;
-  let threeCamera = null;
+  // เมื่อโหลดโมเดลเสร็จ
+  viewer.addEventListener("load", () => {
+    const scene = viewer.sceneGraph;
 
-  // รอ until เมื่อโมเดลโหลด + renderer internal พร้อมใช้งาน
-  viewer.addEventListener("model-visibility", () => {
-    // เข้าถึง renderer ภายใน (API ลับของ v4.x)
-    const r = viewer.renderer;
+    viewer.addEventListener("click", (event) => {
+      const rect = viewer.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    threeScene  = r.threeScene;
-    threeCamera = r.threeCamera;
+      const hit = viewer.positionAndNormalFromPoint(x, y);
+      if (!hit) return;
 
-    output.innerText = "🎉 renderer พร้อมใช้งานแล้ว คลิกโมเดลได้เลย!";
+      // หา object ที่โดนคลิก
+      const object = scene.model.getObjectByProperty("id", hit.objectId);
+
+      if (object) {
+        const name = object.name || "Unknown object";
+        const properties = object.userData || {};  // custom properties
+
+        showInfoPopup(name, properties);
+      }
+    });
   });
 
-  viewer.addEventListener("click", (event) => {
+  function showInfoPopup(name, properties) {
+    infoBox.style.display = "block";
 
-    if (!threeScene || !threeCamera) {
-      output.innerText = "⏳ โมเดลยังโหลดไม่เสร็จ รอสักครู่...";
-      return;
-    }
+    infoBox.innerHTML = `
+      <h3>${name}</h3>
+      <pre>${JSON.stringify(properties, null, 2)}</pre>
+    `;
 
-    const rect = viewer.getBoundingClientRect();
-
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, threeCamera);
-
-    const intersects = raycaster.intersectObjects(threeScene.children, true);
-
-    if (intersects.length === 0) {
-      output.innerText = "ไม่ได้คลิกโดนโมเดล";
-      return;
-    }
-
-    const hit = intersects[0];
-
-    output.innerText = JSON.stringify({
-      point: hit.point,
-      normal: hit.face?.normal,
-      object: hit.object.name || "(no name)"
-    }, null, 2);
-  });
+    // ซ่อนอัตโนมัติหลัง 6 วิ
+    clearTimeout(window.infoTimer);
+    window.infoTimer = setTimeout(() => {
+      infoBox.style.display = "none";
+    }, 6000);
+  }
 </script>
-
 
 </body>
 </html>
