@@ -8,6 +8,8 @@
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
   </script>
 
+  <script type="module" src="https://unpkg.com/three@0.152.2/build/three.module.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
@@ -37,13 +39,8 @@
     camera-controls
     touch-action="none"
     exposure="1"
-    ar
     disable-zoom
-    style="width: 800px; height: 500px; background:#ddd; border-radius:15px;"
-
-    experimental-features="hit-test"
-    >
-
+    style="width: 800px; height: 500px; background:#ddd; border-radius:15px;">
   </model-viewer>
 
   <div id="infoBox">
@@ -51,7 +48,9 @@
     <pre id="output">ยังไม่ได้คลิกโมเดล</pre>
   </div>
 
-  <script>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+
     const viewer = document.getElementById("viewer");
     const output = document.getElementById("output");
 
@@ -59,39 +58,46 @@
       console.log("MODEL LOADED");
     });
 
-    viewer.addEventListener("click", async (event) => {
+    // 👉 Raycaster
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    viewer.addEventListener("click", (event) => {
       console.log("CLICK DETECTED");
 
       const rect = viewer.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      const normalizedX = clickX / rect.width;
-      const normalizedY = clickY / rect.height;
+      const camera = viewer.getCamera();     // กล้องของ model-viewer
+      const scene = viewer.model?.scene;     // โมเดล (Three.js Scene)
 
-      // 🎯 hitTest ของ model-viewer
-      const hits = await viewer.scene.hitTest(normalizedX, normalizedY);
-
-      if (!hits || hits.length === 0) {
-        console.log("HIT RESULT: null");
-
-        output.innerText = JSON.stringify(
-          { Error: "ไม่โดนโมเดล หรือโมเดลไม่มี mesh" },
-          null,
-          2
-        );
+      if (!scene) {
+        output.innerText = "โมเดลยังโหลดไม่เสร็จ";
         return;
       }
 
-      const hit = hits[0];
+      raycaster.setFromCamera(mouse, camera);
 
-      console.log("HIT RESULT:", hit);
+      const intersects = raycaster.intersectObjects(scene.children, true);
 
-      output.innerText = JSON.stringify({
-        point: hit.point,
-        normal: hit.normal,
-        face: hit.face
-      }, null, 2);
+      if (intersects.length === 0) {
+        console.log("NOT HIT");
+        output.innerText = "ไม่โดนโมเดล";
+        return;
+      }
+
+      const hit = intersects[0];
+
+      output.innerText = JSON.stringify(
+        {
+          point: hit.point,
+          normal: hit.face?.normal,
+          object: hit.object.name
+        },
+        null,
+        2
+      );
     });
   </script>
 
