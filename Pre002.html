@@ -1,46 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Three.js + GLB จาก URL</title>
-  <style> body { margin:0; overflow:hidden; } </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR AR Example</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #infoBox {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 12px 18px;
+            color: white;
+            display: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
 </head>
+
 <body>
-<script type="module">
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
-  import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/loaders/GLTFLoader.js';
+    <div id="infoBox">ข้อมูลวัตถุ</div>
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 20);
-  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163/build/three.module.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/loaders/GLTFLoader.js';
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.163/examples/jsm/webxr/ARButton.js';
 
-  const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-  scene.add(light);
+        let camera, scene, renderer, controller;
+        let model = null;
 
-  const loader = new GLTFLoader();
-  loader.load(
-    'https://modelagency.pw/ggaa_ZZ.glb',
-    (gltf) => {
-      const model = gltf.scene;
-      model.scale.set(0.2, 0.2, 0.2);
-      scene.add(model);
-      renderer.render(scene, camera);
-    },
-    undefined,
-    (error) => {
-      console.error('Error loading GLB:', error);
-    }
-  );
+        init();
+        animate();
 
-  camera.position.z = 1;
+        function init() {
+            scene = new THREE.Scene();
 
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-  }
-  animate();
-</script>
+            camera = new THREE.PerspectiveCamera(
+                70,
+                window.innerWidth / window.innerHeight,
+                0.01,
+                20
+            );
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+
+            // Controller สำหรับแตะหน้าจอ
+            controller = renderer.xr.getController(0);
+            controller.addEventListener('select', onSelect);
+            scene.add(controller);
+
+            // โหลดโมเดล GLB (ถ้าคุณมี model.glb)
+            const loader = new GLTFLoader();
+            loader.load(
+                'https://modelagency.pw/ggaa_ZZ.glb',
+                (gltf) => {
+                    model = gltf.scene;
+                    model.scale.set(0.2, 0.2, 0.2);
+                },
+                undefined,
+                () => {
+                    // ถ้า GLB ไม่มี จะสร้างกล่องแทน
+                    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+                    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+                    model = new THREE.Mesh(geometry, material);
+                }
+            );
+
+            // แสง
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+            scene.add(light);
+        }
+
+        function onSelect() {
+            if (!model) return;
+
+            // วางโมเดลด้านหน้ากล้อง
+            const pos = new THREE.Vector3(0, 0, -0.5).applyMatrix4(controller.matrixWorld);
+            model.position.copy(pos);
+            scene.add(model);
+
+            // แสดงข้อมูล
+            showInfo("ชื่อวัตถุ: โมเดล 3D\nประเภท: วัตถุ AR\nตำแหน่ง: หน้าอุปกรณ์ 0.5m");
+        }
+
+        function showInfo(text) {
+            const box = document.getElementById('infoBox');
+            box.innerText = text;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 2500);
+        }
+
+        function animate() {
+            renderer.setAnimationLoop(() => {
+                renderer.render(scene, camera);
+            });
+        }
+    </script>
 </body>
 </html>
