@@ -54,7 +54,7 @@ const loader = new GLTFLoader();
 let mixer = null;
 
 // เปลี่ยน URL นี้เป็นโมเดลของคุณ
-const modelURL = "";
+const modelURL = "https://modelagency.pw/PCL.glb";
 
 loader.load(modelURL, (gltf) => {
   scene.add(gltf.scene);
@@ -119,4 +119,5 @@ window.addEventListener('resize', () => {
 </script>
 
 </body>
+
 </html>
