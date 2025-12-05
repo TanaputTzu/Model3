@@ -71,7 +71,7 @@
       text-align: center;
     }
 
-    /* INFO POPUP */
+    /* Popup แสดงข้อมูล */
     #infoBox {
       display: none;
       position: fixed;
@@ -125,7 +125,7 @@
   <model-viewer
     id="viewer"
     src="https://modelagency.pw/bataPCL.glb"
-    ios-src="______"
+    ios-src="_____"
     alt="3D model"
     ar
     ar-modes="webxr scene-viewer quick-look"
@@ -134,22 +134,20 @@
     autoplay
     animation-loop>
     
-    <button slot="ar-button" class="ar-button">
-      👓 View in AR
-    </button>
+    <button slot="ar-button" class="ar-button">👓 View in AR</button>
   </model-viewer>
 
-  <!-- BOX แสดงข้อมูล -->
+  <!-- popup -->
   <div id="infoBox"></div>
 
   <footer>© 2025 My AR Model</footer>
 
 
+<!-- SCRIPT -->
 <script type="module">
   const viewer = document.querySelector("#viewer");
   const infoBox = document.getElementById("infoBox");
 
-  // เมื่อโหลดโมเดลเสร็จ
   viewer.addEventListener("load", () => {
     const scene = viewer.sceneGraph;
 
@@ -161,14 +159,21 @@
       const hit = viewer.positionAndNormalFromPoint(x, y);
       if (!hit) return;
 
-      // หา object ที่โดนคลิก
       const object = scene.model.getObjectByProperty("id", hit.objectId);
 
       if (object) {
         const name = object.name || "Unknown object";
-        const properties = object.userData || {};  // custom properties
 
-        showInfoPopup(name, properties);
+        const data = {
+          ...object.extras,
+          ...object.userData
+        };
+
+        if (!data || Object.keys(data).length === 0) {
+          showInfoPopup(name, { "ไม่มีข้อมูล Custom Properties": "กรุณาเพิ่ม extras.* ใน Blender" });
+        } else {
+          showInfoPopup(name, data);
+        }
       }
     });
   });
@@ -181,7 +186,6 @@
       <pre>${JSON.stringify(properties, null, 2)}</pre>
     `;
 
-    // ซ่อนอัตโนมัติหลัง 6 วิ
     clearTimeout(window.infoTimer);
     window.infoTimer = setTimeout(() => {
       infoBox.style.display = "none";
