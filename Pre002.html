@@ -1,97 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Multi 3D Products</title>
+<meta charset="UTF-8">
+<title>Model Info Extract</title>
 
 <script type="module"
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
-  body { margin: 0; padding: 20px; font-family: sans-serif; }
-
-  #buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  button {
-    padding: 10px 15px;
-    background: #3a6df0;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
+  body { font-family: sans-serif; padding: 20px; }
   #infoBox {
-    background: rgba(0,0,0,0.7);
+    background: #f3f3f3;
     padding: 15px;
-    color: #fff;
-    border-radius: 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px #0002;
     margin-top: 15px;
+    white-space: pre-line;
   }
 </style>
+
 </head>
 
 <body>
 
-<h2>เลือกอุปกรณ์</h2>
+<h2>ดึงข้อมูลจากตัววัตถุ (GLB)</h2>
 
-<!-- ปุ่มเลือกแต่ละอุปกรณ์ -->
-<div id="buttons">
-  <button onclick="loadProduct('p1')">อุปกรณ์ 1</button>
-  <button onclick="loadProduct('p2')">อุปกรณ์ 2</button>
-  <button onclick="loadProduct('p3')">อุปกรณ์ 3</button>
-</div>
-
-<!-- 3D viewer -->
-<model-viewer id="viewer"
-  camera-controls
-  auto-rotate
-  ar
-  style="width:100%; height:400px;">
+<model-viewer id="mv"
+    src="https://modelagency.pw/ggaa_ZZ.glb"
+    camera-controls
+    autoplay
+    auto-rotate
+    style="width:100%; height:400px;">
 </model-viewer>
 
-<!-- กล่องแสดงข้อมูล -->
-<div id="infoBox"></div>
+<div id="infoBox">กำลังโหลดข้อมูล...</div>
 
 <script>
-// ฐานข้อมูลอุปกรณ์ (แก้ไขได้)
-const products = {
-  p1: {
-    name: "อุปกรณ์ 1",
-    model: "https://modelagency.pw/ggaa_XX.glb",
-    detail: "โมเดลที่ 1 จาก ModelAgency",
-  },
-  p2: {
-    name: "อุปกรณ์ 2",
-    model: "https://labs.fxhash.xyz/models/monkey.glb",
-    detail: "โมเดลตัวอย่างจาก Monkey GLB",
-  },
-  p3: {
-    name: "อุปกรณ์ 3",
-    model: "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
-    detail: "โมเดลนักบินอวกาศ",
-  }
-};
+const mv = document.querySelector("#mv");
+const box = document.querySelector("#infoBox");
 
-// ฟังก์ชันโหลดอุปกรณ์ที่เลือก
-function loadProduct(key) {
-  const p = products[key];
+mv.addEventListener("load", () => {
+  
+  // ตัวโมเดลในแบบ Object3D (Three.js)
+  const model = mv.model;
+  
+  if (!model) return;
 
-  const viewer = document.getElementById("viewer");
-  const info = document.getElementById("infoBox");
+  // --- ดึงข้อมูลจริงจากโมเดล ---
+  const meshes = [];
+  const materials = new Set();
+  const nodes = [];
+  
+  model.traverse((node) => {
+    nodes.push(node.name);
 
-  viewer.src = p.model; // โหลดโมเดลใหม่
+    if (node.isMesh) {
+      meshes.push(node.name);
+      if (node.material) {
+        materials.add(node.material.name || "(no name)");
+      }
+    }
+  });
 
-  info.innerHTML = `
-    <b>ชื่ออุปกรณ์:</b> ${p.name}<br>
-    <b>รายละเอียด:</b> ${p.detail}
+  // รายการ Animation
+  const animations = mv.availableAnimations;
+
+  // แสดงข้อมูลทั้งหมด
+  box.innerHTML = `
+📌 <b>ข้อมูลที่ดึงจากโมเดล</b>
+
+🔹 ชื่อ Mesh:
+${meshes.map(m => "• " + m).join("\n")}
+
+🔹 รายชื่อ Material:
+${[...materials].map(mat => "• " + mat).join("\n")}
+
+🔹 จำนวน Node ทั้งหมด: ${nodes.length}
+
+🔹 มี Animation:
+${animations.length > 0 ? animations.join(", ") : "ไม่มี animation"}
+
+🔹 Raw Node Tree (ทั้งหมด):
+${nodes.map(n => "• " + n).join("\n")}
   `;
-}
+});
 </script>
 
 </body>
