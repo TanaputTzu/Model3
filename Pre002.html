@@ -7,28 +7,21 @@
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
-    /* 1. **การตั้งค่าพื้นฐานสำหรับเต็มจอ** */
+    /* **การตั้งค่าพื้นฐาน** */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    /* ทำให้ HTML สูงเต็มจอเพื่อให้ Body อ้างอิงได้ */
-    html {
-        height: 100%; 
-    }
 
     body {
       font-family: "Segoe UI", sans-serif;
       background: #f9f9f9;
-      
-      /* 💥 Flexbox Container Setup (สำคัญ) */
       display: flex;
-      flex-direction: column; /* จัดเรียงองค์ประกอบในแนวตั้ง */
+      flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      
-      height: 100%; /* ใช้ความสูงเต็ม Viewport */
+      min-height: 100vh; /* เต็มจอ */
       overflow-x: hidden;
     }
 
@@ -37,23 +30,22 @@
       text-align: center;
       margin: 12px 0;
       color: #333;
-      flex-shrink: 0; /* ป้องกันไม่ให้โดนบีบเมื่อ model-viewer ขยาย */
     }
 
+    /* 🟢 **การแก้ไขขนาด model-viewer ให้เสถียร** */
     model-viewer {
-      width: 95%; /* ใช้ 95% เพื่อความสวยงาม */
+      width: 95%; 
       max-width: 900px;
-      
-      /* 🟢 **[จุดสำคัญ]** ให้ model-viewer ขยายเต็มพื้นที่ว่าง */
-      flex-grow: 1; 
-      min-height: 0; /* แก้ปัญหา Flexbox Overflow */
+      /* 1. กำหนดความสูงด้วย vh เพื่อให้มีพื้นที่แน่นอน */
+      height: 75vh; 
       
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
+      /* 2. ลบ flex-grow: 1; ออกเพื่อป้องกันการบีบอัด */
     }
 
-    /* ปุ่ม AR */
+    /* ปุ่ม AR (ตำแหน่งที่ควรอยู่ด้านล่างโมเดล) */
     .ar-button {
       background: linear-gradient(135deg, #ff6600, #ff9900);
       color: white;
@@ -76,7 +68,7 @@
       transform: translateX(-50%) scale(1.05);
     }
     
-    /* --- Hotspot & Annotation Styles --- */
+    /* --- Hotspot & Annotation Styles (เหมือนเดิม) --- */
     .Hotspot {
       background: #007bff;
       border-radius: 50%;
@@ -103,7 +95,7 @@
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       border: 1px solid #ccc;
-      pointer-events: none; /* ทำให้สามารถคลิกผ่านกล่องข้อความไปยังโมเดลได้ */
+      pointer-events: none;
       position: absolute;
       min-width: 200px;
       transform: translate(-50%, -100%);
@@ -130,17 +122,16 @@
       font-size: 0.9rem;
       color: #666;
       text-align: center;
-      flex-shrink: 0; /* ป้องกันไม่ให้โดนบีบเมื่อ model-viewer ขยาย */
     }
 
-    /* 📱 Responsive Styles: ใช้ความสูงแบบ VH บนมือถือ เพื่อไม่ให้ยาวเกินไป */
+    /* 📱 Responsive Styles */
     @media (max-width: 768px) {
       h1 {
         font-size: 1.4rem;
       }
       model-viewer {
-        height: 70vh; /* ใช้ความสูงคงที่บนมือถือเพื่อให้ Footer ไม่หายไป */
-        flex-grow: 0; /* ปิดการขยายตัวบนมือถือ */
+        height: 80vh; /* เพิ่มความสูงบนมือถือ */
+        border-radius: 0;
       }
     }
   </style>
@@ -170,7 +161,7 @@
       i
     </button>
 
-        <div class="HotspotAnnotation" slot="hotspot-annotation-table" id="annotation-table">
+    <div class="HotspotAnnotation" slot="hotspot-annotation-table" id="annotation-table">
       <p><strong>จุด: โต๊ะประชุมอัจฉริยะ</strong></p>
       <p>รองรับ 8 ที่นั่ง</p>
       <p>มีระบบไฟฟ้าและ LAN ในตัว</p>
@@ -186,11 +177,14 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const modelViewer = document.getElementById('viewer');
-      const tableHotspot = modelViewer.querySelector('.Hotspot');
+      // ใช้ querySelectorAll เพื่อให้มั่นใจว่าหา Hotspot ถูกต้อง
+      const tableHotspot = modelViewer.querySelector('[slot="hotspot-table"]');
       const tableAnnotation = document.getElementById('annotation-table');
 
       if (tableHotspot) {
-        tableHotspot.addEventListener('click', () => {
+        tableHotspot.addEventListener('click', (event) => {
+          // ป้องกันการ Propagation ของ Event (อาจจะช่วยให้การคลิกทำงานดีขึ้น)
+          event.stopPropagation();
           // สลับสถานะ Active ของ Hotspot
           tableHotspot.classList.toggle('active');
           // สลับการแสดงผลของ Annotation (Pop-up)
@@ -200,6 +194,7 @@
 
       // ปิด Annotation เมื่อคลิกที่อื่นในโมเดล
       modelViewer.addEventListener('click', (event) => {
+        // เช็คว่าไม่ได้คลิกโดน Hotspot และ Annotation กำลังแสดงอยู่
         if (event.target !== tableHotspot && tableAnnotation.classList.contains('visible')) {
           tableAnnotation.classList.remove('visible');
           tableHotspot.classList.remove('active');
