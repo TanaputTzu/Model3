@@ -1,91 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Model Info Extract</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Viewer + Custom Properties</title>
 
-<script type="module"
+  <!-- model-viewer -->
+  <script type="module"
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-</script>
+  </script>
 
-<style>
-  body { font-family: sans-serif; padding: 20px; }
-  #infoBox {
-    background: #f3f3f3;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px #0002;
-    margin-top: 15px;
-    white-space: pre-line;
-  }
-</style>
-
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    #info {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+      white-space: pre-wrap;
+    }
+    .prop-block {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>ดึงข้อมูลจากตัววัตถุ (GLB)</h2>
+  <h2>Model + Custom Properties</h2>
 
-<model-viewer id="mv"
+  <!-- แสดงโมเดล -->
+  <model-viewer id="viewer"
     src="https://modelagency.pw/PCL.glb"
     camera-controls
-    autoplay
     auto-rotate
-    style="width:100%; height:400px;">
-</model-viewer>
+    ar
+    style="width: 100%; height: 500px;">
+  </model-viewer>
 
-<div id="infoBox">กำลังโหลดข้อมูล...</div>
+  <!-- ส่วนแสดง Custom Properties -->
+  <h3>Custom Properties (from Blender)</h3>
+  <div id="info">Loading properties...</div>
 
-<script>
-const mv = document.querySelector("#mv");
-const box = document.querySelector("#infoBox");
+  <!-- โหลด GLTF เพื่อตรวจสอบ Custom Properties -->
+  <script type="module">
+    import { GLTFLoader } 
+    from "https://cdn.jsdelivr.net/npm/three@0.161/examples/jsm/loaders/GLTFLoader.js";
 
-mv.addEventListener("load", () => {
-  
-  // ตัวโมเดลในแบบ Object3D (Three.js)
-  const model = mv.model;
-  
-  if (!model) return;
+    const loader = new GLTFLoader();
 
-  // --- ดึงข้อมูลจริงจากโมเดล ---
-  const meshes = [];
-  const materials = new Set();
-  const nodes = [];
-  
-  model.traverse((node) => {
-    nodes.push(node.name);
+    loader.load("model.glb", (gltf) => {
+      const infoBox = document.getElementById("info");
+      infoBox.innerHTML = ""; // เคลียร์ข้อความเดิม
 
-    if (node.isMesh) {
-      meshes.push(node.name);
-      if (node.material) {
-        materials.add(node.material.name || "(no name)");
+      gltf.scene.traverse((node) => {
+        // Custom Properties จะอยู่ใน userData หรือ extras
+        if (node.userData && Object.keys(node.userData).length > 0) {
+          
+          infoBox.innerHTML += `
+            <div class="prop-block">
+              <strong>Object:</strong> ${node.name}<br>
+              <strong>Properties:</strong><br>
+              <pre>${JSON.stringify(node.userData, null, 2)}</pre>
+            </div>
+          `;
+        }
+      });
+
+      // หากไม่พบ property
+      if (infoBox.innerHTML.trim() === "") {
+        infoBox.innerHTML = "ไม่พบ Custom Properties ในโมเดลนี้";
       }
-    }
-  });
-
-  // รายการ Animation
-  const animations = mv.availableAnimations;
-
-  // แสดงข้อมูลทั้งหมด
-  box.innerHTML = `
-📌 <b>ข้อมูลที่ดึงจากโมเดล</b>
-
-🔹 ชื่อ Mesh:
-${meshes.map(m => "• " + m).join("\n")}
-
-🔹 รายชื่อ Material:
-${[...materials].map(mat => "• " + mat).join("\n")}
-
-🔹 จำนวน Node ทั้งหมด: ${nodes.length}
-
-🔹 มี Animation:
-${animations.length > 0 ? animations.join(", ") : "ไม่มี animation"}
-
-🔹 Raw Node Tree (ทั้งหมด):
-${nodes.map(n => "• " + n).join("\n")}
-  `;
-});
-</script>
+    });
+  </script>
 
 </body>
 </html>
