@@ -3,24 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer with Single Clickable Hotspot</title>
+  <title>3D Model AR Viewer with Clickable Hotspot</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
+    /* 1. **การตั้งค่าพื้นฐานสำหรับเต็มจอ** */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    /* ทำให้ HTML สูงเต็มจอเพื่อให้ Body อ้างอิงได้ */
+    html {
+        height: 100%; 
+    }
 
     body {
       font-family: "Segoe UI", sans-serif;
       background: #f9f9f9;
+      
+      /* 💥 Flexbox Container Setup (สำคัญ) */
       display: flex;
-      flex-direction: column;
+      flex-direction: column; /* จัดเรียงองค์ประกอบในแนวตั้ง */
       align-items: center;
       justify-content: flex-start;
-      min-height: 100vh; /* เปลี่ยน height เป็น min-height เพื่อให้มี Footer */
+      
+      height: 100%; /* ใช้ความสูงเต็ม Viewport */
       overflow-x: hidden;
     }
 
@@ -29,17 +37,20 @@
       text-align: center;
       margin: 12px 0;
       color: #333;
+      flex-shrink: 0; /* ป้องกันไม่ให้โดนบีบเมื่อ model-viewer ขยาย */
     }
 
     model-viewer {
       width: 95%; /* ใช้ 95% เพื่อความสวยงาม */
       max-width: 900px;
-      height: auto;
-      aspect-ratio: 16 / 9; /* กำหนดสัดส่วนเริ่มต้นสำหรับ Desktop */
+      
+      /* 🟢 **[จุดสำคัญ]** ให้ model-viewer ขยายเต็มพื้นที่ว่าง */
+      flex-grow: 1; 
+      min-height: 0; /* แก้ปัญหา Flexbox Overflow */
+      
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
-      flex-grow: 1;
     }
 
     /* ปุ่ม AR */
@@ -96,13 +107,13 @@
       position: absolute;
       min-width: 200px;
       transform: translate(-50%, -100%);
-      opacity: 0;
+      opacity: 0; /* 🟢 ซ่อนข้อความเริ่มต้น */
       transition: opacity 0.3s, transform 0.3s;
       z-index: 5;
     }
     .HotspotAnnotation.visible {
-      opacity: 1;
-      transform: translate(-50%, -120%); /* ขยับขึ้นเล็กน้อยเมื่อแสดง */
+      opacity: 1; /* 🟢 แสดง Pop-up เมื่อกด */
+      transform: translate(-50%, -120%); 
     }
     .HotspotAnnotation p {
       margin: 2px 0;
@@ -119,23 +130,17 @@
       font-size: 0.9rem;
       color: #666;
       text-align: center;
+      flex-shrink: 0; /* ป้องกันไม่ให้โดนบีบเมื่อ model-viewer ขยาย */
     }
 
-    /* 📱 สำหรับมือถือแนวตั้ง */
-    @media (max-width: 480px) {
+    /* 📱 Responsive Styles: ใช้ความสูงแบบ VH บนมือถือ เพื่อไม่ให้ยาวเกินไป */
+    @media (max-width: 768px) {
       h1 {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
       }
       model-viewer {
-        aspect-ratio: 4 / 5;
-      }
-    }
-
-    /* 📱 สำหรับ iPad หรือแท็บเล็ต */
-    @media (min-width: 481px) and (max-width: 1024px) {
-      model-viewer {
-        aspect-ratio: 3 / 2;
-        max-width: 100%;
+        height: 70vh; /* ใช้ความสูงคงที่บนมือถือเพื่อให้ Footer ไม่หายไป */
+        flex-grow: 0; /* ปิดการขยายตัวบนมือถือ */
       }
     }
   </style>
@@ -188,12 +193,12 @@
         tableHotspot.addEventListener('click', () => {
           // สลับสถานะ Active ของ Hotspot
           tableHotspot.classList.toggle('active');
-          // สลับการแสดงผลของ Annotation
+          // สลับการแสดงผลของ Annotation (Pop-up)
           tableAnnotation.classList.toggle('visible');
         });
       }
 
-      // [Optional] ปิด Annotation เมื่อคลิกที่อื่นในโมเดล
+      // ปิด Annotation เมื่อคลิกที่อื่นในโมเดล
       modelViewer.addEventListener('click', (event) => {
         if (event.target !== tableHotspot && tableAnnotation.classList.contains('visible')) {
           tableAnnotation.classList.remove('visible');
