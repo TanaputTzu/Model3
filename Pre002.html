@@ -1,212 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer + Object Info</title>
+    <meta charset="UTF-8" />
+    <title>AR Model Viewer</title>
 
- <script type="module" src="https://unpkg.com/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
+    <!-- model-viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      overflow-x: hidden;
-    }
-
-    h1 {
-      font-size: 1.6rem;
-      text-align: center;
-      margin: 12px 0;
-      color: #333;
-    }
-
-    model-viewer {
-      width: 100%;
-      max-width: 900px;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      background: #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .ar-button {
-      background: linear-gradient(135deg, #ff6600, #ff9900);
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-      transition: 0.3s;
-    }
-
-    .ar-button:hover {
-      transform: translateX(-50%) scale(1.05);
-    }
-
-    footer {
-      margin: 15px 0;
-      font-size: 0.9rem;
-      color: #666;
-      text-align: center;
-    }
-
-    /* Popup แสดงข้อมูล */
-    #infoBox {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ffffff;
-      padding: 18px;
-      border-radius: 14px;
-      width: 85%;
-      max-width: 420px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      font-family: "Segoe UI";
-      z-index: 1000;
-      animation: fadeIn 0.25s ease-out;
-    }
-
-    #infoBox h3 {
-      margin-bottom: 8px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 1.2rem; }
-      model-viewer { aspect-ratio: 4 / 5; }
-    }
-
-    @media (min-width: 481px) and (max-width: 1024px) {
-      model-viewer {
-        aspect-ratio: 3 / 2;
-        max-width: 100%;
-      }
-    }
-
-    @media (min-width: 1025px) {
-      model-viewer {
-        aspect-ratio: 16 / 9;
-        max-width: 900px;
-      }
-    }
-  </style>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background: #fafafa;
+            text-align: center;
+        }
+        #infoBox {
+            width: 320px;
+            margin: 30px auto;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+        pre {
+            background: #f3f3f3;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>ห้องปฏิบัติการประชุมของสาขา</h1>
 
-  <model-viewer
-    id="viewer"
+<h2>ทดสอบคลิก Model</h2>
+
+<!-- ====================== MODEL VIEWER ====================== -->
+<model-viewer id="viewer"
     src="https://modelagency.pw/ggaa_ZZ.glb"
-    ios-src="_____"
-    alt="3D model"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
     camera-controls
     auto-rotate
-    autoplay
-    animation-loop>
-    
-    <button slot="ar-button" class="ar-button">👓 View in AR</button>
-  </model-viewer>
+    exposure="1"
+    shadow-intensity="1"
+    ar
+    style="width: 80vw; height: 60vh; margin: auto; background:#ddd;">
+</model-viewer>
 
-  <!-- popup -->
-  <div id="infoBox"></div>
+<!-- แสดงผล -->
+<div id="infoBox">
+    <strong id="hitTitle">ยังไม่ได้คลิกโมเดล</strong>
+    <pre id="hitData">{}</pre>
+</div>
 
-  <footer>© 2025 My AR Model</footer>
+<script>
+    const viewer = document.querySelector("#viewer");
+    const hitTitle = document.querySelector("#hitTitle");
+    const hitData = document.querySelector("#hitData");
 
-
-<!-- SCRIPT -->
-<script type="module">
-  const viewer = document.querySelector("#viewer");
-  const infoBox = document.getElementById("infoBox");
-
-  viewer.addEventListener("load", () => {
-    console.log("MODEL LOADED");
-    const scene = viewer.sceneGraph;
-
-    viewer.addEventListener("click", (event) => {
-
-      console.log("CLICK DETECTED");
-
-      const rect = viewer.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      const hit = viewer.positionAndNormalFromPoint(x, y);
-      console.log("HIT RESULT:", hit);
-
-      if (!hit) {
-        showInfoPopup("No Hit", { Error: "ไม่ได้แตะโดนวัตถุใด ๆ" });
-        return;
-      }
-
-      const sceneModel = scene.model;
-      console.log("SCENE MODEL:", sceneModel);
-
-      const object = sceneModel.getObjectByProperty("id", hit.objectId);
-      console.log("FOUND OBJECT:", object);
-
-      if (!object) {
-        showInfoPopup("Object Not Found", { 
-          Error: "พบ hit แต่ไม่มี object ที่ตรงกับ objectId" 
-        });
-        return;
-      }
-
-      const data = {
-        name: object.name || "(no name)",
-        extras: object.extras || "no extras",
-        userData: object.userData || "no userData",
-        objectId: hit.objectId
-      };
-
-      console.log("FINAL DATA:", data);
-
-      showInfoPopup("OBJECT INFO", data);
+    // เมื่อโหลดโมเดลเสร็จ
+    viewer.addEventListener("load", () => {
+        console.log("MODEL LOADED");
     });
-  });
 
-  function showInfoPopup(title, data) {
-    infoBox.style.display = "block";
-    infoBox.innerHTML = `
-      <h3>${title}</h3>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
-    `;
+    // คลิกโมเดล
+    viewer.addEventListener("click", (event) => {
+        console.log("CLICK DETECTED");
 
-    clearTimeout(window.infoTimer);
-    window.infoTimer = setTimeout(() => {
-      infoBox.style.display = "none";
-    }, 8000);
-  }
+        const rect = viewer.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+
+        const hit = viewer.positionAndNormalFromPoint(x, y);
+
+        if (!hit) {
+            console.log("HIT RESULT: null");
+            hitTitle.textContent = "No Hit";
+            hitData.textContent = JSON.stringify({
+                Error: "ไม่ได้แตะโดนโมเดลหรือไม่มีข้อมูล"
+            }, null, 2);
+            return;
+        }
+
+        console.log("HIT RESULT:", hit);
+
+        hitTitle.textContent = "Hit OK!";
+        hitData.textContent = JSON.stringify(hit, null, 2);
+    });
 </script>
 
 </body>
