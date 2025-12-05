@@ -1,122 +1,203 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-    <title>AR Model Viewer with Data</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D Model AR Viewer with Hotspots</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      overflow-x: hidden;
-    }
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    h1 {
-      font-size: 1.6rem;
-      text-align: center;
-      margin: 12px 0;
-      color: #333;
-    }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow-x: hidden;
+    }
 
-    model-viewer {
-      width: 100%;
-      max-width: 900px;
-      height: auto;
-      aspect-ratio: 1 / 1; /* ปรับตามอุปกรณ์โดยอัตโนมัติ */
-      background: #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-    }
+    h1 {
+      font-size: 1.6rem;
+      text-align: center;
+      margin: 12px 0;
+      color: #333;
+    }
 
-    /* ปุ่ม AR */
-    .ar-button {
-      background: linear-gradient(135deg, #ff6600, #ff9900);
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-      transition: 0.3s;
-    }
+    model-viewer {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      background: #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+    }
 
-    .ar-button:hover {
-      transform: translateX(-50%) scale(1.05);
-    }
+    /* ปุ่ม AR */
+    .ar-button {
+      background: linear-gradient(135deg, #ff6600, #ff9900);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: 0.3s;
+      z-index: 10; /* ให้ปุ่ม AR อยู่ด้านหน้า */
+    }
 
-    footer {
-      margin: 15px 0;
-      font-size: 0.9rem;
-      color: #666;
-      text-align: center;
-    }
+    .ar-button:hover {
+      transform: translateX(-50%) scale(1.05);
+    }
 
-    /* 📱 สำหรับมือถือแนวตั้ง */
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1.2rem;
-      }
-      model-viewer {
-        aspect-ratio: 4 / 5; /* ปรับสัดส่วนให้เต็มจอมือถือแนวตั้ง */
-      }
-    }
+    /* 🔴 CSS สำหรับ Hotspots (จุด) */
+    .Hotspot {
+      background: #007bff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      border: 3px solid white;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 0.7rem;
+    }
+    .Hotspot:hover {
+      background: #ff4500; /* เปลี่ยนสีเมื่อโฮเวอร์ */
+      transform: scale(1.2);
+    }
 
-    /* 📱 สำหรับ iPad หรือแท็บเล็ต */
-    @media (min-width: 481px) and (max-width: 1024px) {
-      model-viewer {
-        aspect-ratio: 3 / 2; /* ดูเต็มจอแนวนอนของ iPad */
-        max-width: 100%;
-      }
-    }
+    /* 📄 CSS สำหรับ Annotation (กล่องข้อมูล) */
+    .HotspotAnnotation {
+      background-color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid #ccc;
+      pointer-events: none; /* ทำให้สามารถคลิก Hotspot ด้านล่างได้ */
+      position: absolute;
+      min-width: 150px;
+      transform: translate(-50%, -100%); /* จัดตำแหน่งให้อยู่ด้านบน Hotspot */
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 5;
+    }
 
-    /* 💻 สำหรับ desktop จอใหญ่ */
-    @media (min-width: 1025px) {
-      model-viewer {
-        aspect-ratio: 16 / 9;
-        max-width: 900px;
-      }
-    }
-  </style>
+    /* ทำให้ Annotation แสดงผลเมื่อ Hotspot ถูกโฮเวอร์ */
+    .Hotspot:hover + .HotspotAnnotation,
+    .HotspotAnnotation.visible {
+      opacity: 1;
+      transform: translate(-50%, -120%);
+    }
 
+    /* จัดรูปแบบข้อมูลในกล่อง */
+    .HotspotAnnotation p {
+      margin: 2px 0;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    .HotspotAnnotation strong {
+      color: #007bff;
+    }
+
+    /* 📱 Responsive Styles (คงไว้ตามเดิม) */
+    @media (max-width: 480px) {
+      h1 { font-size: 1.2rem; }
+      model-viewer { aspect-ratio: 4 / 5; }
+    }
+    @media (min-width: 481px) and (max-width: 1024px) {
+      model-viewer { aspect-ratio: 3 / 2; max-width: 100%; }
+    }
+    @media (min-width: 1025px) {
+      model-viewer { aspect-ratio: 16 / 9; max-width: 900px; }
+    }
+
+    footer {
+      margin: 15px 0;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <model-viewer 
-        src="https://modelagency.pw/PCL.glb" 
-        ar 
-        ar-modes="webxr scene-viewer quick-look" 
-        camera-controls 
-        alt="A 3D model of your object" 
-        shadow-intensity="1">
+  <h1>ห้องปฏิบัติการประชุมของสาขา</h1>
 
-        <button class="Hotspot" slot="hotspot-1" data-position="0.5 1.0 0" data-normal="0 1 0"></button>
-        <div class="HotspotAnnotation" slot="hotspot-annotation-1">
-            **ชื่อชิ้นส่วน:** ส่วนบน<br>
-            **รายละเอียด:** วัสดุทำจากไทเทเนียม
-        </div>
+  <model-viewer
+    id="viewer"
+    src="https://modelagency.pw/room502endActive.glb"
+    ios-src="https://modelagency.pw/room502endActions.usdz"
+    alt="3D model"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    auto-rotate
+    autoplay
+    animation-loop>
+    
+        <button 
+      class="Hotspot" 
+      slot="hotspot-table" 
+      data-position="-0.7 0.7 0" 
+      data-normal="0 1 0" 
+      data-surface="0 -1 0">
+      1
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-table">
+      <p><strong>จุดที่ 1: โต๊ะประชุม</strong></p>
+      <p>รองรับผู้เข้าร่วมประชุม 8 ท่าน</p>
+      <p>มีช่องต่อไฟฟ้าและสาย LAN ในตัว</p>
+    </div>
 
-        <button class="Hotspot" slot="hotspot-2" data-position="-0.5 0.2 0.3" data-normal="0 0 1"></button>
-        <div class="HotspotAnnotation" slot="hotspot-annotation-2">
-            **น้ำหนัก:** 1.5 กิโลกรัม<br>
-            **หมายเลขซีเรียล:** SN12345
-        </div>
+        <button 
+      class="Hotspot" 
+      slot="hotspot-screen" 
+      data-position="0 1.2 -1.5" 
+      data-normal="0 0 -1"
+      data-surface="0 0 -1">
+      2
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-screen">
+      <p><strong>จุดที่ 2: จอแสดงผล 80 นิ้ว</strong></p>
+      <p>ความละเอียด 4K, รองรับการประชุมทางไกล</p>
+    </div>
 
-    </model-viewer>
+        <button 
+      class="Hotspot" 
+      slot="hotspot-chair" 
+      data-position="-1.5 0.5 1.0" 
+      data-normal="0 1 0"
+      data-surface="0 0 1">
+      3
+    </button>
+    <div class="HotspotAnnotation" slot="hotspot-annotation-chair">
+      <p><strong>จุดที่ 3: เก้าอี้ Ergonomic</strong></p>
+      <p>ปรับระดับได้, เหมาะสำหรับการนั่งนาน</p>
+    </div>
+
+    <button slot="ar-button" class="ar-button">
+      👓 View in AR
+    </button>
+  </model-viewer>
+
+  <footer>© 2025 My AR Model</footer>
 </body>
 </html>
-
