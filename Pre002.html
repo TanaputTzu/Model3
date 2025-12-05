@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D Model AR Viewer with Clickable Hotspots - Responsive</title>
+  <title>3D Model AR Viewer with Clickable Hotspots - Responsive (PC Optimized)</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
@@ -19,29 +19,28 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      /* กำหนดความสูงของ body ให้เต็มหน้าจอ */
-      min-height: 100vh; 
+      min-height: 100vh;
       overflow-x: hidden;
     }
 
     h1 {
-      font-size: 1.6rem;
+      font-size: 1.8rem; /* เพิ่มขนาดหัวข้อเล็กน้อยสำหรับ PC */
       text-align: center;
-      margin: 12px 0;
+      margin: 15px 0; /* เพิ่มระยะห่างเล็กน้อย */
       color: #333;
     }
 
     model-viewer {
-      width: 95%; /* ใช้ความกว้าง 95% ของ container */
-      max-width: 1000px; /* จำกัดความกว้างสูงสุดสำหรับ PC จอใหญ่ */
-      
-      /* 📐 การปรับขนาดหลักสำหรับ model-viewer */
-      height: 65vh; /* ใช้ความสูง 65% ของ Viewport Height (vh) เพื่อให้มีที่ว่างสำหรับ Header/Footer/AR Button */
-      
+      width: 95%;
+      max-width: 1200px; /* **[PC Optimization 1]** เพิ่ม max-width ให้ใช้พื้นที่บน PC จอใหญ่ได้มากขึ้น */
+      
+      /* 📐 การปรับขนาดหลักสำหรับ model-viewer: เพิ่มความสูงให้เหมาะสมกับ PC */
+      height: 80vh; /* **[PC Optimization 2]** ใช้ความสูง 80% ของ Viewport Height (vh) เพื่อแสดงผลได้ใหญ่ขึ้นบน PC */
+      
       background: #ddd;
       border-radius: 12px;
       overflow: hidden;
-      flex-grow: 1; /* ให้ model-viewer ขยายตัวเต็มพื้นที่ระหว่าง h1 และ footer */
+      flex-grow: 1;
     }
 
     /* ปุ่ม AR */
@@ -54,7 +53,7 @@
       cursor: pointer;
       font-size: 1rem;
       font-weight: bold;
-      position: absolute; /* ยังคงเป็น absolute เพื่อให้ลอยอยู่เหนือ model-viewer */
+      position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
@@ -66,7 +65,7 @@
       transform: translateX(-50%) scale(1.05);
     }
 
-    /* 🔴 Hotspots และ Annotation CSS (ไม่เปลี่ยนแปลงจากเดิม) */
+    /* 🔴 Hotspots และ Annotation CSS */
     .Hotspot {
       background: #007bff;
       border-radius: 50%;
@@ -113,16 +112,16 @@
       color: #007bff;
     }
 
-    /* 📱 Responsive Styles (ปรับปรุง) */
+    /* 📱 Responsive Styles สำหรับมือถือ */
     @media (max-width: 768px) {
       h1 {
         font-size: 1.4rem;
         margin: 10px 0;
       }
       model-viewer {
-        /* ให้ model-viewer ใช้ความสูงมากขึ้นบนมือถือเนื่องจากพื้นที่จำกัด */
-        height: 75vh; 
-        border-radius: 0; /* ไม่มีขอบมนบนมือถือเพื่อให้เต็มจอ */
+        /* ปรับความสูงลงเล็กน้อยสำหรับมือถือ */
+        height: 75vh;
+        border-radius: 0;
       }
       .ar-button {
         font-size: 0.9rem;
@@ -153,11 +152,11 @@
     autoplay
     animation-loop>
     
-        <button 
-      class="Hotspot" 
-      slot="hotspot-table" 
-      data-position="-0.7 0.7 0" 
-      data-normal="0 1 0" 
+        <button 
+      class="Hotspot" 
+      slot="hotspot-table" 
+      data-position="-0.7 0.7 0" 
+      data-normal="0 1 0" 
       data-annotation-id="annotation-table">
       1
     </button>
@@ -167,10 +166,10 @@
       <p>มีช่องต่อไฟฟ้าและสาย LAN ในตัว</p>
     </div>
 
-        <button 
-      class="Hotspot" 
-      slot="hotspot-screen" 
-      data-position="0 1.2 -1.5" 
+        <button 
+      class="Hotspot" 
+      slot="hotspot-screen" 
+      data-position="0 1.2 -1.5" 
       data-normal="0 0 -1"
       data-annotation-id="annotation-screen">
       2
@@ -180,10 +179,10 @@
       <p>ความละเอียด 4K, รองรับการประชุมทางไกล</p>
     </div>
 
-        <button 
-      class="Hotspot" 
-      slot="hotspot-chair" 
-      data-position="-1.5 0.5 1.0" 
+        <button 
+      class="Hotspot" 
+      slot="hotspot-chair" 
+      data-position="-1.5 0.5 1.0" 
       data-normal="0 1 0"
       data-annotation-id="annotation-chair">
       3
