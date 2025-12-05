@@ -8,24 +8,15 @@
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
   </script>
 
-  <script type="module" src="https://unpkg.com/three@0.152.2/build/three.module.js"></script>
+  <script type="module"
+    src="https://unpkg.com/three@0.152.2/build/three.module.js"></script>
 
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin: 0;
-      background: #fafafa;
-    }
+    body { font-family: sans-serif; text-align: center; margin: 0; background: #fafafa; }
     #infoBox {
-      margin-top: 20px;
-      padding: 15px;
-      width: 350px;
-      background: white;
-      box-shadow: 0px 2px 10px rgba(0,0,0,0.10);
-      border-radius: 10px;
-      display: inline-block;
-      text-align: left;
+      margin-top: 20px; padding: 15px; width: 350px;
+      background: white; box-shadow: 0px 2px 10px rgba(0,0,0,0.10);
+      border-radius: 10px; display: inline-block; text-align: left;
     }
   </style>
 </head>
@@ -37,8 +28,8 @@
   <model-viewer id="viewer"
     src="https://modelagency.pw/ggaa_ZZ.glb"
     camera-controls
-    touch-action="none"
     exposure="1"
+    touch-action="none"
     disable-zoom
     style="width: 800px; height: 500px; background:#ddd; border-radius:15px;">
   </model-viewer>
@@ -51,39 +42,32 @@
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 
-    const viewer = document.querySelector("#viewer");
-    const output = document.querySelector("#output");
-
-    // ดึง symbol THREE ที่ซ่อนไว้ใน model-viewer
-    const $renderer = Object.getOwnPropertySymbols(viewer)
-      .find(s => viewer[s]?.renderer);
-
-    viewer.addEventListener("load", () => {
-      console.log("MODEL LOADED");
-    });
+    const viewer = document.getElementById("viewer");
+    const output = document.getElementById("output");
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
     viewer.addEventListener("click", (event) => {
-      console.log("CLICK DETECTED");
+
+      const r = viewer.renderer;
+
+      // บังคับรอ until renderer internal พร้อมใช้งาน
+      if (!r?.threeScene || !r?.threeCamera) {
+        output.innerText = "renderer ยังไม่พร้อม ลองคลิกอีกครั้ง";
+        return;
+      }
+
+      const scene = r.threeScene;
+      const camera = r.threeCamera;
 
       const rect = viewer.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      const rendererData = viewer[$renderer];
-      if (!rendererData) {
-        output.innerText = "ไม่พบ renderer ภายในของ model-viewer";
-        return;
-      }
+      raycaster.setFromCamera(mouse, camera);
 
-      const threeScene = rendererData.scene;
-      const threeCamera = rendererData.camera;
-
-      raycaster.setFromCamera(mouse, threeCamera);
-
-      const intersects = raycaster.intersectObjects(threeScene.children, true);
+      const intersects = raycaster.intersectObjects(scene.children, true);
 
       if (intersects.length === 0) {
         output.innerText = "ไม่โดนโมเดล";
@@ -92,9 +76,13 @@
 
       const hit = intersects[0];
 
-      output.innerText = JSON.stringify(
-        {
-          point: hit.point,
-          normal: hit.face?.normal,
-          object: hit.object.name
-        }
+      output.innerText = JSON.stringify({
+        point: hit.point,
+        normal: hit.face?.normal,
+        object: hit.object.name || "(no name)"
+      }, null, 2);
+    });
+  </script>
+
+</body>
+</html>
