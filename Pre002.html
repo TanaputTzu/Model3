@@ -40,49 +40,59 @@
   </div>
 
   <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
+  import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 
-    const viewer = document.getElementById("viewer");
-    const output = document.getElementById("output");
+  const viewer = document.getElementById("viewer");
+  const output = document.getElementById("output");
 
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
 
-    viewer.addEventListener("click", (event) => {
+  let threeScene = null;
+  let threeCamera = null;
 
-      const r = viewer.renderer;
+  // รอ until เมื่อโมเดลโหลด + renderer internal พร้อมใช้งาน
+  viewer.addEventListener("model-visibility", () => {
+    // เข้าถึง renderer ภายใน (API ลับของ v4.x)
+    const r = viewer.renderer;
 
-      // บังคับรอ until renderer internal พร้อมใช้งาน
-      if (!r?.threeScene || !r?.threeCamera) {
-        output.innerText = "renderer ยังไม่พร้อม ลองคลิกอีกครั้ง";
-        return;
-      }
+    threeScene  = r.threeScene;
+    threeCamera = r.threeCamera;
 
-      const scene = r.threeScene;
-      const camera = r.threeCamera;
+    output.innerText = "🎉 renderer พร้อมใช้งานแล้ว คลิกโมเดลได้เลย!";
+  });
 
-      const rect = viewer.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  viewer.addEventListener("click", (event) => {
 
-      raycaster.setFromCamera(mouse, camera);
+    if (!threeScene || !threeCamera) {
+      output.innerText = "⏳ โมเดลยังโหลดไม่เสร็จ รอสักครู่...";
+      return;
+    }
 
-      const intersects = raycaster.intersectObjects(scene.children, true);
+    const rect = viewer.getBoundingClientRect();
 
-      if (intersects.length === 0) {
-        output.innerText = "ไม่โดนโมเดล";
-        return;
-      }
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      const hit = intersects[0];
+    raycaster.setFromCamera(mouse, threeCamera);
 
-      output.innerText = JSON.stringify({
-        point: hit.point,
-        normal: hit.face?.normal,
-        object: hit.object.name || "(no name)"
-      }, null, 2);
-    });
-  </script>
+    const intersects = raycaster.intersectObjects(threeScene.children, true);
+
+    if (intersects.length === 0) {
+      output.innerText = "ไม่ได้คลิกโดนโมเดล";
+      return;
+    }
+
+    const hit = intersects[0];
+
+    output.innerText = JSON.stringify({
+      point: hit.point,
+      normal: hit.face?.normal,
+      object: hit.object.name || "(no name)"
+    }, null, 2);
+  });
+</script>
+
 
 </body>
 </html>
