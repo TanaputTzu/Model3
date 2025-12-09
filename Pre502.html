@@ -25,15 +25,16 @@
       border-radius: 12px;
     }
 
-    .hotspot-btn {
-      width: 22px;
-      height: 22px;
-      background: #00ff00;
-      border: 2px solid white;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      cursor: pointer;
-    }
+  .hotspot-btn {
+  width: 18px;
+  aspect-ratio: 1 / 1;      /* บังคับให้เป็นสี่เหลี่ยมจัตุรัส */
+  background: #00ff00;
+  border: 2px solid white;
+  border-radius: 50%;        /* ทำให้เป็นวงกลม */
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transform: translate(-50%, -50%); /* ป้องกันผิดสัดส่วนเวลาเรนเดอร์ */
+}
 
     /* กล่องข้อความ */
     #infoBox {
@@ -160,5 +161,3 @@
 
 </body>
 </html>
-
-
