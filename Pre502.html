@@ -25,16 +25,17 @@
       border-radius: 12px;
     }
 
-   .hotspot-btn {
-      width: 4px;
-      height: 8px;
-      background: #00ff00;
-      border: 2px solid white;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      cursor: pointer;
-    }
-
+      .hotspot-btn {
+  width: 4px;
+  height: 8px;
+  background: #00ff00;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  pointer-events: all;   
+  transform: none !important;  /* ป้องกัน model-viewer บิดปุ่ม */
+  contain: layout style paint;
+}
 
     /* กล่องข้อความ */
     #infoBox {
@@ -161,5 +162,6 @@
 
 </body>
 </html>
+
 
 
